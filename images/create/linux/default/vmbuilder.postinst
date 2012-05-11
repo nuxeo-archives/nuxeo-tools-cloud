@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "#############################################"
+echo "# Replacing /dev/sdX with /dev/vdX in fstab #"
+echo "#############################################"
+
+sed -ie 's,/dev/sd,/dev/vd,g' $1/etc/fstab
+
