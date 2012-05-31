@@ -2,33 +2,22 @@ require "etc"
 
 action :create do
 
-    new_user = false
+    user_exists = true
     begin
         user_info = Etc.getpwnam(@new_resource.username)
     rescue
-        new_user = true
+        user_exists = false
     end
 
-    group "nxgroup" do
-        only_if { new_user == true }
-        group_name "#{new_resource.username}"
-    end
+    user_home = @new_resource.home
+    user_home = user_home ||= "/home/#{new_resource.username}"
 
-    user "nxuser" do
-        only_if { new_user == true }
-        username "#{new_resource.username}"
-        comment "Nuxeo Instance"
-        home    "#{new_resource.home}"
-        gid     "#{new_resource.username}"
-        shell   "/bin/bash"
-    end
-
-    directory "nxhome" do
-        path    "#{new_resource.home}"
-        owner   "#{new_resource.username}"
-        mode    "0700"
-        recursive true
-        action  :create
+    user "#{new_resource.username}" do
+        not_if      { user_exists == true }
+        username    "#{new_resource.username}"
+        comment     "Nuxeo Instance"
+        home        user_home
+        shell       "/bin/bash"
     end
 
 end
@@ -43,21 +32,27 @@ action :delete do
         user_exists = false
     end
 
+    guarded_user = false
+    if "#{new_resource.username}" == "root"
+        guarded_user = true
+    elsif "#{new_resource.username}" == ENV["USER"]
+        guarded_user = true
+    elsif "#{new_resource.username}" == ENV["SUDO_USER"]
+        guarded_user = true
+    end
+
     execute "process cleanup" do
-        only_if { user_exists == true }
-        command "pkill -9 -u #{new_resource.username}"
-        returns [0, 1]
+        only_if     { user_exists == true }
+        only_if     { guarded_user == false }
+        command     "pkill -9 -u #{new_resource.username}"
+        returns     [0, 1]
     end
 
-    directory "nxhome" do
-        path    "#{new_resource.home}"
-        recursive true
-        action :delete
-    end
-
-    user "nxuser" do
-        username "#{new_resource.username}"
-        action :remove
+    user "#{new_resource.username}" do
+        only_if     { user_exists == true }
+        only_if     { guarded_user == false }
+        username    "#{new_resource.username}"
+        action      :remove
     end
 
 end

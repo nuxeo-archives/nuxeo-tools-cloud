@@ -26,7 +26,7 @@ nuxeo.force.generation=true
 # General parameters
 #nuxeo.templates=default
 #nuxeo.bind.address=0.0.0.0
-#nuxeo.url=http://localhost:<%= @http_port -%>/nuxeo
+#nuxeo.url=http://localhost:8080/nuxeo
 #org.nuxeo.ecm.contextPath=/nuxeo
 
 #org.nuxeo.ecm.product.name=
@@ -128,7 +128,4 @@ nuxeo.force.generation=true
 # Disable soft references
 #JAVA_OPTS=$JAVA_OPTS -XX:SoftRefLRUPolicyMSPerMB=0
 nuxeo.wizard.done=true
-
-nuxeo.server.http.port=<%= @http_port %>
-nuxeo.server.tomcat-admin.port=<%= @admin_port %>
 
