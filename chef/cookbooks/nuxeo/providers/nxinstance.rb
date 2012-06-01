@@ -3,7 +3,7 @@ action :create do
 
     # code outside blocks is always executed first
     url = "#{node["distributions"]["#{new_resource.platform}"]["url"]}"
-    filename = "/tmp/#{node["distributions"]["#{new_resource.platform}"]["filename"]}"
+    filename = ::File.join(Dir.tmpdir, "#{node["distributions"]["#{new_resource.platform}"]["filename"]}")
     dirname = "#{node["distributions"]["#{new_resource.platform}"]["dirname"]}"
     sha256sum = "#{node["distributions"]["#{new_resource.platform}"]["sha256sum"]}"
 
@@ -18,6 +18,8 @@ action :create do
     directory "nxhome" do
         path    "#{new_resource.home}"
         owner   "#{new_resource.user}"
+        group   "#{new_resource.group}"
+        recursive true
         mode    "0700"
         action  :create
     end
@@ -27,11 +29,12 @@ action :create do
         creates "#{new_resource.home}/#{dirname}"
         cwd     "#{new_resource.home}"
         user    "#{new_resource.user}"
+        group   "#{new_resource.group}"
         umask   0077
     end
 
     # umask isn't working with unzip
-    execute "chown" do
+    execute "chmod" do
         command "chmod -R og-rwx #{dirname}"
         cwd     "#{new_resource.home}"
         user    "#{new_resource.user}"
@@ -41,6 +44,7 @@ action :create do
         target_file "#{new_resource.home}/server"
         to          "#{new_resource.home}/#{dirname}"
         owner       "#{new_resource.user}"
+        group       "#{new_resource.group}"
         link_type   :symbolic
         action      :create
     end
@@ -58,6 +62,7 @@ action :create do
         path    "#{new_resource.home}/server/bin/nuxeo.conf"
         source  "nuxeo.conf.erb"
         owner   "#{new_resource.user}"
+        group   "#{new_resource.group}"
         mode    "0600"
         variables   ({
             :data_dir => "#{new_resource.home}/data",
