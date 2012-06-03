@@ -47,7 +47,7 @@ node["attributes"]["instances"].each do | id, instance |
         user        username
         group       groupname
         basedir     instance["basedir"] ||= nil
-        platform    instance["targetplatform"] ||=  "cap-5.5"
+        distrib     instance["distrib"] ||= "cap-5.5"
         action      :create
     end
 

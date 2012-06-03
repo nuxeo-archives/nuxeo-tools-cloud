@@ -35,7 +35,7 @@ filegroup.add_argument("-j", "--json", metavar="JSON_FILE", action = "store",
 filegroup.add_argument("-x", "--xml", metavar="XML_FILE", action = "store",
            help = "XML file to read the instance description from")
 parser.add_argument("--distrib", action = "store", metavar="DISTRIBTION_DIR",
-           help = "File, directory or target platform to " + \
+           help = "File, directory, URL or target platform to " + \
                   "use as a source for the distribution")
 parser.add_argument("--basedir", action = "store", metavar="DEPLOY_HOME",
            help = "Directory the instance(s) will be deployed under")
@@ -159,10 +159,7 @@ for instance_key in instances_root.keys():
 
     # Override distribution with local one / targetplatform
     if args.distrib != None:
-        if os.path.isfile(args.distrib):
-            attributes["instances"][instance_id]["localplatform"] = args.distrib
-        else:
-            attributes["instances"][instance_id]["targetplatform"] = args.distrib
+        attributes["instances"][instance_id]["distrib"] = args.distrib
 
     # Define the user we deploy under
     attributes["instances"][instance_id]["user"] = username
