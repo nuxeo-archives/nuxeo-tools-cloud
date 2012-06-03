@@ -173,7 +173,7 @@ for instance_key in instances_root.keys():
         instance_base = os.path.join(instances_base, instance_id)
     else:
         instance_base = os.path.join(instances_base, instance_id, instance_key)
-    attributes["instances"][instance_id]["home"] = instance_base
+    attributes["instances"][instance_id]["basedir"] = instance_base
     if not os.path.isdir(instances_base):
         os.makedirs(instance_base, 0700)
     os.chown(instances_base, uid, gid)
@@ -194,9 +194,18 @@ nodefile.close()
 # run chef-solo
 print "Starting chef process"
 cmd = ['chef-solo', '-c', conffilename, '-j', nodefilename]
-subprocess.check_call(cmd, shell = False)
-
-# cleanup
+#cmd = ['chef-solo', '-l', 'debug', '-c', conffilename, '-j', nodefilename]
+try:
+    subprocess.check_call(cmd, shell = False)
+except:
+    # Give tmpdir ownership back to sudoer
+    for root, dirs, files in os.walk(tmpdir):
+        os.chown(os.path.join(tmpdir, root), uid, gid)
+        for f in files:
+            os.chown(os.path.join(tmpdir, root, f), uid, gid)
+    raise
+    
+# cleanup tmpdir if all went well
 try:
     shutil.rmtree(tmpdir)
 except:

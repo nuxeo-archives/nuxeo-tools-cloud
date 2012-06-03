@@ -1,28 +1,55 @@
+require "etc"
+
+running_user_name = ENV["SUDO_USER"] || ENV["USER"]
+
 
 node["attributes"]["instances"].each do | id, instance |
 
-    running_user_name = ENV["SUDO_USER"] ||= ENV["USER"]
-    running_user_uid = Etc.getpwnam(running_user_name).uid
-    running_user_gid = Etc.getpwnam(running_user_name).gid
-    running_user_home = Etc.getpwnam(running_user_name).dir
-    running_group_name = Etc.getgrgid(running_user_gid).name
+    new_user_name = instance["user"] || running_user_name
+    new_user_home = instance["basedir"] || "/home/#{new_user_name}" # Is there a system-independant way to get "/home" ?
+    new_group_name = instance["group"] || new_user_name
 
-    nuxeo_nxuser "#{id}" do
-        username    instance["user"] ||= running_user_name
-        action      :create
+    user_exists = true
+    begin
+        user_info = Etc.getpwnam(new_user_name)
+    rescue
+        user_exists = false
     end
 
+    new_group = group "newgroup" do
+        not_if      {user_exists == true}
+        group_name  new_group_name
+        action      :nothing
+    end
+
+    new_user = user "newuser" do
+        not_if      {user_exists == true}
+        username    new_user_name
+        gid         new_group_name
+        comment     "Nuxeo Instance"
+        home        new_user_home
+        shell       "/bin/bash"
+        action      :nothing
+    end
+
+    if user_exists == false then
+        new_group.run_action(:create)
+        new_user.run_action(:create)
+    end
+
+    user_info = Etc.getpwnam(new_user_name)
+    group_info = Etc.getgrgid(user_info.gid)
+    username = new_user_name
+    groupname = group_info.name
+
     nuxeo_nxinstance "#{id}" do
-        user        instance["user"] ||= running_user_name
-        group       instance["group"] ||= running_group_name
-        home        instance["home"] ||= ::File.join(running_user_home, "nxinstance-#{id}")
+        id          id
+        user        username
+        group       groupname
+        basedir     instance["basedir"] ||= nil
         platform    instance["targetplatform"] ||=  "cap-5.5"
         action      :create
     end
 
 end
 
-#nuxeo_nxinstance "same one" do
-#    username    "nxtest"
-#    action      :delete
-#end
