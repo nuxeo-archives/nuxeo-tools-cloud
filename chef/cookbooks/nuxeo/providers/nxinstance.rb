@@ -14,23 +14,23 @@ end
 
 action :create do
 
-    user_info = Etc.getpwnam(@new_resource.user)
-    instance_base = @new_resource.basedir || ::File.join(user_info.dir, "nxinstance-#{new_resource.id}")
+    user_info = Etc.getpwnam(new_resource.user)
+    instance_base = new_resource.basedir || ::File.join(user_info.dir, "nxinstance-#{new_resource.id}")
 
     # Get distribution source and destination - look inside zip if needed
     distrib_source = "remote"
     filename = nil
     dirname = nil
     source = nil
-    if ::File.exists?(@new_resource.distrib) then
-        if ::File.directory?(@new_resource.distrib) then
+    if ::File.exists?(new_resource.distrib) then
+        if ::File.directory?(new_resource.distrib) then
             distrib_source = "dir"
-            filename = @new_resource.distrib
-            dirname = ::File.basename(@new_resource.distrib)
-            source = @new_resource.distrib
+            filename = new_resource.distrib
+            dirname = ::File.basename(new_resource.distrib)
+            source = new_resource.distrib
         else
             distrib_source = "file"
-            filename = @new_resource.distrib
+            filename = new_resource.distrib
             chef_gem "rubyzip"
             require "zip/zip"
             zip = Zip::ZipFile.open(filename)
@@ -41,14 +41,14 @@ action :create do
                     dirname = entry.to_s().sub(/\/$/, '')
                 end
             end
-            source = @new_resource.distrib
+            source = new_resource.distrib
         end
     else
-        if uri?(@new_resource.distrib) then
-            url = @new_resource.distrib
-            filename = ::File.join(Dir.tmpdir, ::File.basename(@new_resource.distrib))
+        if uri?(new_resource.distrib) then
+            url = new_resource.distrib
+            filename = ::File.join(Dir.tmpdir, ::File.basename(new_resource.distrib))
             sha256sum = nil
-            source = @new_resource.distrib
+            source = new_resource.distrib
         else
             url = "#{node["distributions"]["#{new_resource.distrib}"]["url"]}"
             filename = ::File.join(Dir.tmpdir, "#{node["distributions"]["#{new_resource.distrib}"]["filename"]}")
@@ -84,13 +84,11 @@ action :create do
 
     # installed package list
     installed_packages = []
-    print "\n*** Packages:\n" + new_resource.packages.to_s() + "\n\n"
     new_resource.packages.each do |id, state|
         if Integer(state) > 2 then
             installed_packages << id
         end
     end
-    print "\n*** To install:\n" + installed_packages.to_s() + "\n\n"
 
     Chef::Log.info("########################################################")
     Chef::Log.info("# Instance ID: #{new_resource.id}")
@@ -205,14 +203,14 @@ action :create do
     # install packages
     execute "mpinit" do
         only_if {installed_packages.count() > 0}
-        command "#{nuxeoctl} mp-init"
+        command "#{nuxeoctl} -q mp-init"
         user    user_info.name
         group   user_info.gid
         umask   0077
     end
     execute "mpinstall" do
         only_if {installed_packages.count() > 0}
-        command "#{nuxeoctl} mp-install #{installed_packages.join(" ")}"
+        command "#{nuxeoctl} -q mp-install #{installed_packages.join(" ")}"
         user    user_info.name
         group   user_info.gid
         umask   0077
@@ -223,10 +221,7 @@ end
 
 action :delete do
 
-    #nuxeo_nxuser "nxuser" do
-    #    username "#{new_resource.username}"
-    #    action :delete
-    #end
+    Chef::Log.info("Delete not implemented")
 
 end
 
