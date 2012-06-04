@@ -75,6 +75,23 @@ action :create do
         end
     end
 
+    # Set up paths
+    nuxeo_home_dir = ::File.join(instance_base, dirname)
+    nuxeo_conf_file = ::File.join(nuxeo_home_dir, "bin", "nuxeo.conf")
+    nuxeo_data_dir = ::File.join(nuxeo_home_dir, "nxserver", "data")
+    realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
+    nuxeoctl = ::File.join(instance_base, "nuxeoctl")
+
+    # installed package list
+    installed_packages = []
+    print "\n*** Packages:\n" + new_resource.packages.to_s() + "\n\n"
+    new_resource.packages.each do |id, state|
+        if Integer(state) > 2 then
+            installed_packages << id
+        end
+    end
+    print "\n*** To install:\n" + installed_packages.to_s() + "\n\n"
+
     Chef::Log.info("########################################################")
     Chef::Log.info("# Instance ID: #{new_resource.id}")
     Chef::Log.info("# Instance base: #{instance_base}")
@@ -136,28 +153,69 @@ action :create do
 
     ruby_block "remove_conf_from_distrib" do
         block do
-            nuxeoconffile = ::File.join(instance_base, dirname, "bin", "nuxeo.conf")
-            if ::File.exists?(nuxeoconffile) then
+            nuxeo_conf_file = ::File.join(instance_base, dirname, "bin", "nuxeo.conf")
+            if ::File.exists?(nuxeo_conf_file) then
                 Chef::Log.info("Removing default nuxeo.conf")
-                FileUtils.rm(nuxeoconffile)
+                FileUtils.rm(nuxeo_conf_file)
             else
                 Chef::Log.info("No nuxeo.conf to remove")
             end
         end
     end
 
-    template "nuxeo.conf" do
-        path    ::File.join(instance_base, dirname, "bin", "nuxeo.conf")
-        source  "nuxeo.conf.erb"
-        owner   user_info.name
+    ruby_block "fix_conf" do
+        block do
+            # nuxeo.conf
+            ::File.open(nuxeo_conf_file, 'w') do |conf|
+                conf.puts("JAVA_OPTS=#{new_resource.nuxeoconf["JAVA_OPTS"]}\n")
+                new_resource.nuxeoconf.delete("JAVA_OPTS")
+                templates = new_resource.basetemplates.insert(0, new_resource.dbtemplate).join(",")
+                conf.puts("nuxeo.templates=#{templates}\n")
+                new_resource.nuxeoconf.each do |key, value|
+                    if key == "nuxeo.data.dir" then
+                        nuxeo_data_dir = value
+                    end
+                    conf.puts("#{key}=#{value}\n")
+                end
+            end
+            ::File.chown(user_info.uid, user_info.gid, nuxeo_conf_file)
+            ::File.chmod(0600, nuxeo_conf_file)
+            # instance.clid
+            if new_resource.clid != nil then
+                clidfile = ::File.join(nuxeo_data_dir, "instance.clid")
+                ::File.open(clidfile, 'w') do |clid|
+                    clid.puts(new_resource.clid)
+                end
+                ::File.chown(user_info.uid, user_info.gid, clidfile)
+                ::File.chmod(0600, clidfile)
+            end
+            # Add fake nuxeoctl that includes env vars
+            ::File.open(nuxeoctl, 'w') do |ctl|
+                ctl.puts("#!/bin/bash\n")
+                ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
+                ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
+                ctl.puts("#{realnuxeoctl} --gui=false $@\n")
+            end
+            ::File.chown(user_info.uid, user_info.gid, nuxeoctl)
+            ::File.chmod(0700, realnuxeoctl)
+            ::File.chmod(0700, nuxeoctl)
+        end
+    end
+
+    # install packages
+    execute "mpinit" do
+        only_if {installed_packages.count() > 0}
+        command "#{nuxeoctl} mp-init"
+        user    user_info.name
         group   user_info.gid
-        mode    "0600"
-        variables   ({
-            :data_dir => "#{instance_base}/data",
-            :log_dir => "#{instance_base}/logs",
-            :tmp_dir => "#{instance_base}/tmp",
-            :pid_dir => "#{instance_base}",
-        })
+        umask   0077
+    end
+    execute "mpinstall" do
+        only_if {installed_packages.count() > 0}
+        command "#{nuxeoctl} mp-install #{installed_packages.join(" ")}"
+        user    user_info.name
+        group   user_info.gid
+        umask   0077
     end
 
 end

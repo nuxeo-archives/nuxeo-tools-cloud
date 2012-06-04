@@ -1,3 +1,7 @@
+# This one is internal to Nuxeo - change to maven.nuxeo.org or your local maven repository
+default["distributions"]["cap-5.6-SNAPSHOT"]["filename"] = "nuxeo-cap-5.6-SNAPSHOT-tomcat.zip"
+default["distributions"]["cap-5.6-SNAPSHOT"]["url"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-snapshots&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=5.6-SNAPSHOT&e=zip&c=nuxeo-cap"
+
 default["distributions"]["cap-5.5"]["filename"] = "nuxeo-cap-5.5-tomcat.zip"
 default["distributions"]["cap-5.5"]["url"] = "http://cdn.nuxeo.com/nuxeo-5.5/nuxeo-cap-5.5-tomcat-offline.zip"
 default["distributions"]["cap-5.5"]["sha256sum"] = "6890844643cb6076132eb4a0716e6264af0ae6cc62aa204035ab1f69f6e1d3ac"

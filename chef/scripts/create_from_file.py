@@ -31,16 +31,20 @@ pp = pprint.PrettyPrinter(indent = 2)
 parser = argparse.ArgumentParser()
 filegroup = parser.add_mutually_exclusive_group(required = True)
 filegroup.add_argument("-j", "--json", metavar="JSON_FILE", action = "store",
-           help = "JSON file to read the instance description from")
+                help = "JSON file to read the instance description from")
 filegroup.add_argument("-x", "--xml", metavar="XML_FILE", action = "store",
-           help = "XML file to read the instance description from")
+                help = "XML file to read the instance description from")
 parser.add_argument("--distrib", action = "store", metavar="DISTRIBTION_DIR",
-           help = "File, directory, URL or target platform to " + \
+                help = "File, directory, URL or target platform to " + \
                   "use as a source for the distribution")
 parser.add_argument("--basedir", action = "store", metavar="DEPLOY_HOME",
-           help = "Directory the instance(s) will be deployed under")
+                help = "Directory the instance(s) will be deployed under")
+parser.add_argument("--keep-dbtype", action = "store_true",
+                help = "Use the DB from the config instead of the default one")
+parser.add_argument("--keep-ip", action = "store_true",
+                help = "Use the IP from the config instead of 0.0.0.0")
 parser.add_argument("id", action = "store",
-           help = "Local ID to attribute to the instance")
+                help = "Local ID to attribute to the instance")
 args = parser.parse_args()
 
 
@@ -157,25 +161,77 @@ for instance_key in instances_root.keys():
         instance_id = instance_id + "-" + instance_key
     attributes["instances"][instance_id] = {}
 
-    # Override distribution with local one / targetplatform
-    if args.distrib != None:
+    # Distribution
+    if args.distrib == None:
+        attributes["instances"][instance_id]["distrib"] = instance["distribution"]["name"] + "-" + instance["distribution"]["version"]
+    else:
+        # Override distribution
         attributes["instances"][instance_id]["distrib"] = args.distrib
 
     # Define the user we deploy under
     attributes["instances"][instance_id]["user"] = username
     attributes["instances"][instance_id]["group"] = groupname
 
-    # Define where we deploy the instance
+    # Define the deploy location
     if len(instances_root) == 1:
         instance_base = os.path.join(instances_base, instance_id)
     else:
         instance_base = os.path.join(instances_base, instance_id, instance_key)
     attributes["instances"][instance_id]["basedir"] = instance_base
-    if not os.path.isdir(instances_base):
+    if not os.path.isdir(instance_base):
         os.makedirs(instance_base, 0700)
-    os.chown(instances_base, uid, gid)
+    os.chown(instance_base, uid, gid)
 
-    # TODO: Add real instance info
+    # Add nuxeo.conf info
+    conf = {}
+    for keyval in instance["configuration"]["keyvals"]["keyval"]:
+        conf[keyval["key"]] = keyval["value"]
+
+    if args.keep_dbtype == True:
+        attributes["instances"][instance_id]["dbtemplate"] = instance["configuration"]["dbtemplate"]
+    else:
+        # Override DB parameters
+        attributes["instances"][instance_id]["dbtemplate"] = "default"
+        if conf.has_key("nuxeo.db.name"): del conf["nuxeo.db.name"]
+        if conf.has_key("nuxeo.db.host"): del conf["nuxeo.db.host"]
+        if conf.has_key("nuxeo.db.port"): del conf["nuxeo.db.port"]
+        if conf.has_key("nuxeo.db.user"): del conf["nuxeo.db.user"]
+        if conf.has_key("nuxeo.db.password"): del conf["nuxeo.db.password"]
+        if conf.has_key("nuxeo.db.jdbc.url"): del conf["nuxeo.db.jdbc.url"]
+        if conf.has_key("nuxeo.db.driver"): del conf["nuxeo.db.driver"]
+
+    if args.keep_ip == False:
+        # Override IP and URL
+        conf["nuxeo.bind.address"] = "0.0.0.0"
+        if conf.has_key("nuxeo.url"): del conf["nuxeo.url"]
+
+    # Override paths
+        conf["nuxeo.data.dir"] = os.path.join(instance_base, "data")
+        conf["nuxeo.log.dir"] = os.path.join(instance_base, "logs")
+        conf["nuxeo.tmp.dir"] = os.path.join(instance_base, "tmp")
+        conf["nuxeo.pid.dir"] = instance_base
+        
+    attributes["instances"][instance_id]["nuxeoconf"] = conf
+
+    # Add templates info
+    basetemplates = []
+    for basetemplate in instance["configuration"]["basetemplates"]:
+        if basetemplate == "custom":
+            print "Ignoring template: custom"
+        else:
+            basetemplates.append(basetemplate)
+    attributes["instances"][instance_id]["basetemplates"] = basetemplates
+
+    for usertemplate in instance["configuration"]["usertemplates"]:
+        print "Ignoring template:", usertemplate
+
+    packages = {}
+    for package in instance["packages"]["package"]:
+        packages[package["id"]] = int(package["state"])
+    attributes["instances"][instance_id]["packages"] = packages
+
+    if instance.has_key("clid"):
+        attributes["instances"][instance_id]["clid"] =  instance["clid"]
 
 
 node["attributes"] = attributes
