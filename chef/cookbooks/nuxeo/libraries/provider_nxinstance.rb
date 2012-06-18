@@ -1,7 +1,6 @@
 require 'chef/provider'
 require 'etc'
 require 'uri'
-require "zip/zip"
 
 class Chef
   class Provider
@@ -90,6 +89,9 @@ class Chef
                 dirname = ::File.basename(@new_resource.distrib)
                 source = @new_resource.distrib
             else
+                rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
+                rubyzip.run_action(:install)
+                require 'zip/zip'
                 distrib_source = "file"
                 filename = @new_resource.distrib
                 zip = Zip::ZipFile.open(filename)
@@ -128,6 +130,9 @@ class Chef
                 remote_file.mode("0644")
                 remote_file.run_action(:create_if_missing)
             end
+            rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
+            rubyzip.run_action(:install)
+            require 'zip/zip'
             zip = Zip::ZipFile.open(filename)
             zip.entries.each do |entry|
                 if entry.directory? &&
