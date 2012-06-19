@@ -1,7 +1,7 @@
 # This one is internal to Nuxeo - change to maven.nuxeo.org or your local maven repository
 
-default["site"]["snapshot-search-pattern"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-snapshots&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=@VERSION@&e=zip&c=nuxeo-@NAME@"
-default["site"]["release-search-pattern"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-releases&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=@VERSION@&e=zip&c=nuxeo-@NAME@"
+default["site"]["snapshot-search-pattern"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=internal-snapshots&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=@VERSION@&e=zip&c=nuxeo-@NAME@"
+default["site"]["release-search-pattern"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=internal-releases&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=@VERSION@&e=zip&c=nuxeo-@NAME@"
 
 default["distributions"]["cap-5.5"]["filename"] = "nuxeo-cap-5.5-tomcat.zip"
 default["distributions"]["cap-5.5"]["url"] = "http://cdn.nuxeo.com/nuxeo-5.5/nuxeo-cap-5.5-tomcat-offline.zip"
