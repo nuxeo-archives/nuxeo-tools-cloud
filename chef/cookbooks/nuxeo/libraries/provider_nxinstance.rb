@@ -111,10 +111,19 @@ class Chef
                 sha256sum = nil
                 source = @new_resource.distrib
             else
-                url = "#{node["distributions"]["#{@new_resource.distrib}"]["url"]}"
-                filename = ::File.join(Dir.tmpdir, "#{node["distributions"]["#{@new_resource.distrib}"]["filename"]}")
-                sha256sum = "#{node["distributions"]["#{@new_resource.distrib}"]["sha256sum"]}"
-                source = url
+                if node["distributions"].has_key?(@new_resource.distrib) then
+                    url = "#{node["distributions"]["#{@new_resource.distrib}"]["url"]}"
+                    filename = ::File.join(Dir.tmpdir, "#{node["distributions"]["#{@new_resource.distrib}"]["filename"]}")
+                    sha256sum = "#{node["distributions"]["#{@new_resource.distrib}"]["sha256sum"]}"
+                    source = url
+                else
+                    # Fallback on maven
+                    version = @new_resource.distrib.split('-', 2)[1]
+                    url = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-releases&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=#{version}&e=zip&c=nuxeo-cap"
+                    filename = ::File.join(Dir.tmpdir, "nuxeo-cap-#{version}-tomcat.zip")
+                    sha256sum = nil
+                    source = url
+                end
             end
             if distrib_source == "remote" then
                 # Don't cache SNAPSHOTs
@@ -200,7 +209,6 @@ class Chef
         chownlink.cwd(instance_base)
         chownlink.run_action(:run)
 
-        nuxeo_conf_file = ::File.join(instance_base, dirname, "bin", "nuxeo.conf")
         if ::File.exists?(nuxeo_conf_file) then
             Chef::Log.info("Removing default nuxeo.conf")
             FileUtils.rm(nuxeo_conf_file)
@@ -213,16 +221,31 @@ class Chef
 
     def setup_nuxeo(user_info, instance_base, dirname)
         nuxeo_home_dir = ::File.join(instance_base, dirname)
-        nuxeo_conf_file = ::File.join(nuxeo_home_dir, "bin", "nuxeo.conf")
+        nuxeo_conf_dir = ::File.join(instance_base, "conf")
+        nuxeo_conf_file = ::File.join(nuxeo_conf_dir, "nuxeo.conf")
         nuxeo_data_dir = ::File.join(nuxeo_home_dir, "nxserver", "data")
         realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
         nuxeoctl = ::File.join(instance_base, "nuxeoctl")
         # nuxeo.conf
+        nxconf = Chef::Resource::Directory.new("nxconf-#{@new_resource.id}", run_context)
+        nxconf.path(nuxeo_conf_dir)
+        nxconf.owner(user_info.name)
+        nxconf.group(user_info.gid)
+        nxconf.recursive(true)
+        nxconf.mode("0700")
+        nxconf.run_action(:create)
         ::File.open(nuxeo_conf_file, 'w') do |conf|
             conf.puts("JAVA_OPTS=#{@new_resource.nuxeoconf["JAVA_OPTS"]}\n")
             @new_resource.nuxeoconf.delete("JAVA_OPTS")
             templates = @new_resource.basetemplates.insert(0, @new_resource.dbtemplate).join(",")
             conf.puts("nuxeo.templates=#{templates}\n")
+            @new_resource.nuxeoconf.delete("nuxeo.templates")
+            # Obsolete / non-applicable keys
+            @new_resource.nuxeoconf.delete("nuxeo.loopback.url")
+            @new_resource.nuxeoconf.delete("nuxeo.installer.lastinstalledversion")
+            @new_resource.nuxeoconf.delete("nuxeo.installer.useautopg")
+            @new_resource.nuxeoconf.delete("nuxeo.debconf.pgsqldb")
+            # Fill up nuxeo.conf
             @new_resource.nuxeoconf.each do |key, value|
                 if key == "nuxeo.data.dir" then
                     nuxeo_data_dir = value
@@ -234,9 +257,19 @@ class Chef
         ::File.chmod(0600, nuxeo_conf_file)
         # instance.clid
         if @new_resource.clid != nil then
+            nxdata = Chef::Resource::Directory.new("nxdata-#{@new_resource.id}", run_context)
+            nxdata.path(nuxeo_data_dir)
+            nxdata.owner(user_info.name)
+            nxdata.group(user_info.gid)
+            nxdata.recursive(true)
+            nxdata.mode("0700")
+            nxdata.run_action(:create)
             clidfile = ::File.join(nuxeo_data_dir, "instance.clid")
             ::File.open(clidfile, 'w') do |clid|
-                clid.puts(@new_resource.clid)
+                @new_resource.clid.split('--').each do |clidpart|
+                    clid.puts(clidpart)
+                end
+                clid.puts(@new_resource.id)
             end
             ::File.chown(user_info.uid, user_info.gid, clidfile)
             ::File.chmod(0600, clidfile)
@@ -270,7 +303,7 @@ class Chef
         end
         if installed_packages.count() > 0 then
             mpinstall = Chef::Resource::Execute.new("mpinstall-#{@new_resource.id}", run_context)
-            mpinstall.command("#{nuxeoctl} -q mp-install #{installed_packages.join(" ")}")
+            mpinstall.command("#{nuxeoctl} -q --accept=true --relax=true mp-install #{installed_packages.join(" ")}")
             mpinstall.user(user_info.name)
             mpinstall.group(user_info.gid)
             mpinstall.umask(0077)
