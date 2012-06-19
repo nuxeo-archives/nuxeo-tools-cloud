@@ -205,7 +205,7 @@ class Chef
 
         # CHEF-3126
         chownlink = Chef::Resource::Execute.new("chownlink-#{@new_resource.id}", run_context)
-        chownlink.command("chown --no-dereference #{user_info.uid}:#{user_info.gid} server")
+        chownlink.command("chown -h #{user_info.uid}:#{user_info.gid} server")
         chownlink.cwd(instance_base)
         chownlink.run_action(:run)
 
