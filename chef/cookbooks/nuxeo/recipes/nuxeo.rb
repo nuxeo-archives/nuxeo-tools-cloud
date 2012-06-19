@@ -14,8 +14,8 @@ node["attributes"]["instances"].each do | id, instance |
         clid        instance["clid"] ||= nil
         dbtemplate  instance["dbtemplate"]      # String
         basetemplates instance["basetemplates"] # Array
-        nuxeoconf   instance["nuxeoconf"]       # Hash
-        packages    instance["packages"]        # Hash (id => version)
+        nuxeoconf   instance["nuxeoconf"]       # Hash (key => value)
+        packages    instance["packages"]        # Hash (name => [id, version])
         action      :create
     end
 

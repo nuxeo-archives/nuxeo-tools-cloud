@@ -226,8 +226,21 @@ for instance_key in instances_root.keys():
         print "Ignoring template:", usertemplate
 
     packages = {}
+    distversion = instance["distribution"]["version"]
+    while distversion.find(".0-") != -1:
+        distversion = distversion.replace(".0-", "-")
     for package in instance["packages"]["package"]:
-        packages[package["id"]] = int(package["state"])
+        pkg_id = package["id"]
+        # Remove version from ID if it's the same as the distrib
+        # This is useful when overriding the distribution
+        # Note: have to remove trailing ".0" from main version part
+        pkgversion = package["version"]
+        while pkgversion.find(".0-") != -1:
+            pkgversion = pkgversion.replace(".0-", "-")
+        if pkgversion == distversion:
+            pkg_id = ""
+            print "Overriding version for package: " + package["name"]
+        packages[package["name"]] = [pkg_id, int(package["state"])]
     attributes["instances"][instance_id]["packages"] = packages
 
     if instance.has_key("clid"):

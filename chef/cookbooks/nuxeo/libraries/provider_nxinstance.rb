@@ -91,6 +91,7 @@ class Chef
             else
                 rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
                 rubyzip.run_action(:install)
+                Gem.clear_paths()
                 require 'zip/zip'
                 distrib_source = "file"
                 filename = @new_resource.distrib
@@ -118,9 +119,14 @@ class Chef
                     source = url
                 else
                     # Fallback on maven
-                    version = @new_resource.distrib.split('-', 2)[1]
-                    url = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-releases&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=#{version}&e=zip&c=nuxeo-cap"
-                    filename = ::File.join(Dir.tmpdir, "nuxeo-cap-#{version}-tomcat.zip")
+                    platform_name = @new_resource.distrib.split('-', 2)[0]
+                    platform_version = @new_resource.distrib.split('-', 2)[1]
+                    if platform_version.include?("SNAPSHOT") then
+                        url = node["site"]["snapshot-search-pattern"].gsub("@VERSION@", platform_version).gsub("@NAME@", platform_name)
+                    else
+                        url = node["site"]["release-search-pattern"].gsub("@VERSION@", platform_version).gsub("@NAME@", platform_name)
+                    end
+                    filename = ::File.join(Dir.tmpdir, "nuxeo-#{platform_name}-#{platform_version}-tomcat.zip")
                     sha256sum = nil
                     source = url
                 end
@@ -226,6 +232,21 @@ class Chef
         nuxeo_data_dir = ::File.join(nuxeo_home_dir, "nxserver", "data")
         realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
         nuxeoctl = ::File.join(instance_base, "nuxeoctl")
+
+        version_all = @new_resource.distrib.split('-', 2)[1] # 5.6-SNAPSHOT
+        version_main = version_all.split('-', 2)[0] # 5.6
+        version_qualifier = version_all.split('-', 2)[1] # SNAPSHOT
+        version_components = version_main.split('.') # 5, 6
+        while version_components.length() < 3 do
+            version_components << "0"
+        end # 5, 6, 0
+        version_int = version_components[0].to_i() * 1000 * 1000 + version_components[1].to_i() * 1000 + version_components[2].to_i() # 5006000
+        if version_qualifier == nil then
+            version_full = version_components.join('.') # 5.4.2
+        else
+            version_full = version_components.join('.') + '-' + version_qualifier # 5.6.0-SNAPSHOT
+        end
+
         # nuxeo.conf
         nxconf = Chef::Resource::Directory.new("nxconf-#{@new_resource.id}", run_context)
         nxconf.path(nuxeo_conf_dir)
@@ -241,7 +262,9 @@ class Chef
             conf.puts("nuxeo.templates=#{templates}\n")
             @new_resource.nuxeoconf.delete("nuxeo.templates")
             # Obsolete / non-applicable keys
-            @new_resource.nuxeoconf.delete("nuxeo.loopback.url")
+            if version_int >= 5006000 then
+                @new_resource.nuxeoconf.delete("nuxeo.loopback.url")
+            end
             @new_resource.nuxeoconf.delete("nuxeo.installer.lastinstalledversion")
             @new_resource.nuxeoconf.delete("nuxeo.installer.useautopg")
             @new_resource.nuxeoconf.delete("nuxeo.debconf.pgsqldb")
@@ -279,7 +302,13 @@ class Chef
             ctl.puts("#!/bin/bash\n")
             ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
             ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
-            ctl.puts("#{realnuxeoctl} --gui=false $@\n")
+            if version_int < 5004001 then
+                ctl.puts("#{realnuxeoctl} $@\n")
+            elsif version_int < 5006000 then
+                ctl.puts("#{realnuxeoctl} nogui $@\n")
+            else
+                ctl.puts("#{realnuxeoctl} --gui=false $@\n")
+            end
         end
         ::File.chown(user_info.uid, user_info.gid, nuxeoctl)
         ::File.chmod(0700, realnuxeoctl)
@@ -287,27 +316,77 @@ class Chef
 
         # install packages
         installed_packages = []
-        @new_resource.packages.each do |id, state|
+        @new_resource.packages.each do |name, id_state|
+            id = id_state[0]
+            state = id_state[1]
+            # nil id is not imported in the array when parsing json
+            if state == nil then
+                state = id
+                id = ''
+            end
+            # nil id => use the platform version
+            if id.empty? then
+                id = name + '-' + version_full
+            end
             if Integer(state) > 2 then
-                installed_packages << id
+                if version_int >= 5006000 then
+                    installed_packages << id
+                else
+                    # Pre-5.6 can't fetch from marketplace
+                    if id.include?("nuxeo-content-browser") or
+                       id.include?("nuxeo-dm") or
+                       id.include?("nuxeo-dam") or
+                       id.include?("nuxeo-social-collaboration") or
+                       id.include?("nuxeo-cmf") then
+                        installed_packages << id
+                    else
+                        Chef::Log.warn("Ignoring package #{id} for Nuxeo < 5.6")
+                    end
+                end
             end
         end
 
-        if installed_packages.count() > 0 then
-            mpinit = Chef::Resource::Execute.new("mpinit-#{@new_resource.id}", run_context)
-            mpinit.command("#{nuxeoctl} -q mp-init")
-            mpinit.user(user_info.name)
-            mpinit.group(user_info.gid)
-            mpinit.umask(0077)
-            mpinit.run_action(:run)
-        end
-        if installed_packages.count() > 0 then
-            mpinstall = Chef::Resource::Execute.new("mpinstall-#{@new_resource.id}", run_context)
-            mpinstall.command("#{nuxeoctl} -q --accept=true --relax=true mp-install #{installed_packages.join(" ")}")
-            mpinstall.user(user_info.name)
-            mpinstall.group(user_info.gid)
-            mpinstall.umask(0077)
-            mpinstall.run_action(:run)
+        if version_int < 5005000 then
+            # Pre-5.5 doesn't have mp-install
+            Chef::Log.warn("Version is < 5.5 - ignoring packages")
+        else
+            if installed_packages.count() > 0 then
+                if version_int < 5006000 then
+                    # Pre-5.6 doesn't have mp-init
+                    wizard_dir = ::File.join(nuxeo_home_dir, "setupWizardDownloads")
+                    files_to_add = []
+                    Dir.foreach(wizard_dir) do |wizard_file|
+                        if not wizard_file.include?('.') then
+                            files_to_add << ::File.join("setupWizardDownloads", wizard_file)
+                        end
+                    end
+                    if files_to_add.length() >0 then
+                        mpadd = Chef::Resource::Execute.new("mpadd-#{@new_resource.id}", run_context)
+                        mpadd.command("#{nuxeoctl} mp-add " + files_to_add.join(' '))
+                        mpadd.user(user_info.name)
+                        mpadd.group(user_info.gid)
+                        mpadd.umask(0077)
+                        mpadd.run_action(:run)
+                    end
+                else
+                    mpinit = Chef::Resource::Execute.new("mpinit-#{@new_resource.id}", run_context)
+                    mpinit.command("#{nuxeoctl} mp-init")
+                    mpinit.user(user_info.name)
+                    mpinit.group(user_info.gid)
+                    mpinit.umask(0077)
+                    mpinit.run_action(:run)
+                end
+                mpinstall = Chef::Resource::Execute.new("mpinstall-#{@new_resource.id}", run_context)
+                if version_int < 5006000 then
+                    mpinstall.command("#{nuxeoctl} mp-install #{installed_packages.join(" ")}")
+                else
+                    mpinstall.command("#{nuxeoctl} -q --accept=true --relax=true mp-install #{installed_packages.join(" ")}")
+                end
+                mpinstall.user(user_info.name)
+                mpinstall.group(user_info.gid)
+                mpinstall.umask(0077)
+                mpinstall.run_action(:run)
+            end
         end
     end
 
