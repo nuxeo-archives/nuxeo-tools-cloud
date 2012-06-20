@@ -23,6 +23,10 @@ class Chef
 
     def initialize(new_resource, run_context=nil)
         super
+        rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
+        rubyzip.run_action(:install)
+        Gem.clear_paths()
+        require 'zip/zip'
     end
 
     def load_current_resource
@@ -76,6 +80,16 @@ class Chef
         false
     end
 
+    def unzip_file(source, destination)
+        Zip::ZipFile.open(source) do |zip_file|
+            zip_file.each do |f|
+                file_path = ::File.join(destination, f.name)
+                FileUtils.mkdir_p(::File.dirname(file_path))
+                zip_file.extract(f, file_path) unless ::File.exist?(file_path)
+            end
+        end
+    end
+
     def unzip_distribution(user_info, instance_base)
         # Get distribution source and destination - look inside zip if needed
         distrib_source = "remote"
@@ -89,10 +103,6 @@ class Chef
                 dirname = ::File.basename(@new_resource.distrib)
                 source = @new_resource.distrib
             else
-                rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
-                rubyzip.run_action(:install)
-                Gem.clear_paths()
-                require 'zip/zip'
                 distrib_source = "file"
                 filename = @new_resource.distrib
                 zip = Zip::ZipFile.open(filename)
@@ -145,9 +155,6 @@ class Chef
                 remote_file.mode("0644")
                 remote_file.run_action(:create_if_missing)
             end
-            rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
-            rubyzip.run_action(:install)
-            require 'zip/zip'
             zip = Zip::ZipFile.open(filename)
             zip.entries.each do |entry|
                 if entry.directory? &&
@@ -169,47 +176,28 @@ class Chef
         Chef::Log.info("# Distribution source (#{distrib_source}): #{source}")
         Chef::Log.info("########################################################")
 
-        nxhome = Chef::Resource::Directory.new("nxhome-#{@new_resource.id}", run_context)
-        nxhome.path(instance_base)
-        nxhome.owner(user_info.name)
-        nxhome.group(user_info.gid)
-        nxhome.recursive(true)
-        nxhome.mode("0700")
-        nxhome.run_action(:create)
+        FileUtils.mkdir_p(instance_base, :mode => 0700)
 
         if distrib_source == "dir" then
             FileUtils.cp_r(filename, instance_base)
         else
-            unzip = Chef::Resource::Execute.new("unzip-#{@new_resource.id}", run_context)
-            unzip.command("unzip -q #{filename}")
-            unzip.creates(nuxeo_home_dir)
-            unzip.cwd(instance_base)
-            unzip.user(user_info.name)
-            unzip.group(user_info.gid)
-            unzip.umask(0077)
-            unzip.run_action(:run)
+            unzip_file(filename, instance_base)
         end
-        
-        chown = Chef::Resource::Execute.new("chown-#{@new_resource.id}", run_context)
-        chown.command("chown -R #{user_info.uid}:#{user_info.gid} #{dirname}")
-        chown.cwd(instance_base)
-        chown.run_action(:run)
 
-        chmod = Chef::Resource::Execute.new("chmod-#{@new_resource.id}", run_context)
-        chmod.command("chmod -R og-rwx #{dirname}")
-        chmod.cwd(instance_base)
-        chmod.run_action(:run)
+        FileUtils.ln_sf(nuxeo_home_dir, ::File.join(instance_base, "server"))
 
-        symlink = Chef::Resource::Link.new("symlink-#{@new_resource.id}", run_context)
-        symlink.target_file(::File.join(instance_base, "server"))
-        symlink.to(::File.join(instance_base, dirname))
-        # CHEF-3126
-        # symlink.owner(user_info.uid)
-        # symlink.group(user_info.gid)
-        symlink.link_type(:symbolic)
-        symlink.run_action(:create)
+        FileUtils.chown_R(user_info.uid, user_info.gid, instance_base)
 
-        # CHEF-3126
+        Find.find(instance_base) do |entry|
+            if ::File.basename(entry) == '.' or ::File.basename(entry) == '..' then
+                Find.prune()
+            else
+                mode = ::File.stat(entry).mode & 0700
+                FileUtils.chmod(mode, entry)
+            end
+        end
+
+        # No dereference for Ruby chown -> use system chown
         chownlink = Chef::Resource::Execute.new("chownlink-#{@new_resource.id}", run_context)
         chownlink.command("chown -h #{user_info.uid}:#{user_info.gid} server")
         chownlink.cwd(instance_base)
@@ -233,7 +221,19 @@ class Chef
         realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
         nuxeoctl = ::File.join(instance_base, "nuxeoctl")
 
-        version_all = @new_resource.distrib.split('-', 2)[1] # 5.6-SNAPSHOT
+        # Get version from deployed nuxeo.distribution
+        distrib_props = ::File.join(nuxeo_home_dir, "templates", "common", "config", "distribution.properties")
+        version_all = nil
+        ::File.open(distrib_props, 'r') do | propsfile|
+            while (line = propsfile.gets()) do
+                key = line.split('=')[0].strip()
+                value = line.split('=')[1]
+                if key == "org.nuxeo.distribution.version" then
+                    version_all = value.strip()
+                    break
+                end
+            end
+        end
         version_main = version_all.split('-', 2)[0] # 5.6
         version_qualifier = version_all.split('-', 2)[1] # SNAPSHOT
         version_components = version_main.split('.') # 5, 6
@@ -248,13 +248,8 @@ class Chef
         end
 
         # nuxeo.conf
-        nxconf = Chef::Resource::Directory.new("nxconf-#{@new_resource.id}", run_context)
-        nxconf.path(nuxeo_conf_dir)
-        nxconf.owner(user_info.name)
-        nxconf.group(user_info.gid)
-        nxconf.recursive(true)
-        nxconf.mode("0700")
-        nxconf.run_action(:create)
+        FileUtils.mkdir_p(nuxeo_conf_dir, :mode => 0700)
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeo_conf_dir)
         ::File.open(nuxeo_conf_file, 'w') do |conf|
             conf.puts("JAVA_OPTS=#{@new_resource.nuxeoconf["JAVA_OPTS"]}\n")
             @new_resource.nuxeoconf.delete("JAVA_OPTS")
@@ -276,17 +271,11 @@ class Chef
                 conf.puts("#{key}=#{value}\n")
             end
         end
-        ::File.chown(user_info.uid, user_info.gid, nuxeo_conf_file)
-        ::File.chmod(0600, nuxeo_conf_file)
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeo_conf_file)
+        FileUtils.chmod(0600, nuxeo_conf_file)
         # instance.clid
         if @new_resource.clid != nil then
-            nxdata = Chef::Resource::Directory.new("nxdata-#{@new_resource.id}", run_context)
-            nxdata.path(nuxeo_data_dir)
-            nxdata.owner(user_info.name)
-            nxdata.group(user_info.gid)
-            nxdata.recursive(true)
-            nxdata.mode("0700")
-            nxdata.run_action(:create)
+            FileUtils.mkdir_p(nuxeo_data_dir, :mode => 0700)
             clidfile = ::File.join(nuxeo_data_dir, "instance.clid")
             ::File.open(clidfile, 'w') do |clid|
                 @new_resource.clid.split('--').each do |clidpart|
@@ -294,8 +283,8 @@ class Chef
                 end
                 clid.puts(@new_resource.id)
             end
-            ::File.chown(user_info.uid, user_info.gid, clidfile)
-            ::File.chmod(0600, clidfile)
+            FileUtils.chown_R(user_info.uid, user_info.gid, nuxeo_data_dir)
+            FileUtils.chmod(0600, clidfile)
         end
         # Add fake nuxeoctl that includes env vars
         ::File.open(nuxeoctl, 'w') do |ctl|
@@ -310,9 +299,9 @@ class Chef
                 ctl.puts("#{realnuxeoctl} --gui=false $@\n")
             end
         end
-        ::File.chown(user_info.uid, user_info.gid, nuxeoctl)
-        ::File.chmod(0700, realnuxeoctl)
-        ::File.chmod(0700, nuxeoctl)
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeoctl)
+        FileUtils.chmod(0700, realnuxeoctl)
+        FileUtils.chmod(0700, nuxeoctl)
 
         # install packages
         installed_packages = []
@@ -370,7 +359,7 @@ class Chef
                     end
                 else
                     mpinit = Chef::Resource::Execute.new("mpinit-#{@new_resource.id}", run_context)
-                    mpinit.command("#{nuxeoctl} mp-init")
+                    mpinit.command("#{nuxeoctl} -q mp-init")
                     mpinit.user(user_info.name)
                     mpinit.group(user_info.gid)
                     mpinit.umask(0077)
