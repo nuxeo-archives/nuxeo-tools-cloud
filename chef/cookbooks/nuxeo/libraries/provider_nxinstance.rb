@@ -38,8 +38,9 @@ class Chef
         Chef::Log.info("ACTION: create")
         user_info = get_or_create_user
         instance_base = @new_resource.basedir || ::File.join(user_info.dir, "nxinstance-#{@new_resource.id}")
-        dirname = unzip_distribution(user_info, instance_base)
-        setup_nuxeo(user_info, instance_base, dirname)
+        unzip_distribution(user_info, instance_base)
+        add_new_launcher(user_info, instance_base)
+        setup_nuxeo(user_info, instance_base)
     end
 
     def action_delete
@@ -144,9 +145,7 @@ class Chef
             if distrib_source == "remote" then
                 # Don't cache SNAPSHOTs
                 if filename.include? "SNAPSHOT" then
-                    if ::File.exists?(filename) then
-                        FileUtils.rm(filename)
-                    end
+                    FileUtils.rm_f(filename)
                 end
                 remote_file = Chef::Resource::RemoteFile.new("distrib-#{@new_resource.id}", run_context)
                 remote_file.source(url)
@@ -209,17 +208,77 @@ class Chef
         else
             Chef::Log.info("No nuxeo.conf to remove")
         end
-
-        dirname
     end
 
-    def setup_nuxeo(user_info, instance_base, dirname)
-        nuxeo_home_dir = ::File.join(instance_base, dirname)
+    def add_new_launcher(user_info, instance_base)
+        # Download current artifacts for launcher and distribution-resources
+        launcher_tmp = ::File.join(Dir.tmpdir, "nuxeo-launcher.jar")
+        resources_tmp = ::File.join(Dir.tmpdir, "nuxeo-resources.zip")
+        # Don't cache SNAPSHOTs
+        if node["launcher"]["url"].include? "SNAPSHOT" then
+            FileUtils.rm_f(launcher_tmp)
+        end
+        if node["resources"]["url"].include? "SNAPSHOT" then
+            FileUtils.rm_f(resources_tmp)
+        end
+        remote_launcher = Chef::Resource::RemoteFile.new("launcher-#{@new_resource.id}", run_context)
+        remote_launcher.source(node["launcher"]["url"])
+        remote_launcher.path(launcher_tmp)
+        remote_launcher.mode("0644")
+        remote_launcher.run_action(:create_if_missing)
+        remote_resources = Chef::Resource::RemoteFile.new("resources-#{@new_resource.id}", run_context)
+        remote_resources.source(node["resources"]["url"])
+        remote_resources.path(resources_tmp)
+        remote_resources.mode("0644")
+        remote_resources.run_action(:create_if_missing)
+
+        # Add new nuxeo launcher
+        nuxeo_launcher = ::File.join(instance_base, "server", "bin", "alt-nuxeo-launcher.jar")
+        FileUtils.rm_f(nuxeo_launcher)
+        FileUtils.cp(launcher_tmp, nuxeo_launcher)
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeo_launcher)
+        FileUtils.chmod(0600, nuxeo_launcher)
+
+        # Add new nuxeoctl
+        nuxeoctl = ::File.join(instance_base, "server", "bin", "alt-nuxeoctl")
+        nuxeoctl_bat = ::File.join(instance_base, "server", "bin", "alt-nuxeoctl.bat")
+        FileUtils.rm_f(nuxeoctl)
+        FileUtils.rm_f(nuxeoctl_bat)
+        Zip::ZipFile.open(resources_tmp) do |zip_file|
+            zip_file.each do |f|
+                if f.name == "nuxeoctl" or f.name == "nuxeoctl.bat" then
+                    file_path = ::File.join(instance_base, "server", "bin", "alt-" + f.name)
+                    FileUtils.mkdir_p(::File.dirname(file_path))
+                    zip_file.extract(f, file_path) unless ::File.exist?(file_path)
+                end
+            end
+        end
+        newctl = ::File.read(nuxeoctl)
+        newctl.gsub!("nuxeo-launcher.jar", "alt-nuxeo-launcher.jar")
+        ::File.open(nuxeoctl, 'w') do |ctl|
+            ctl.puts(newctl)
+        end
+        newctl_bat = ::File.read(nuxeoctl_bat)
+        newctl_bat.gsub!("nuxeo-launcher.jar", "alt-nuxeo-launcher.jar")
+        ::File.open(nuxeoctl_bat, 'w') do |ctl|
+            ctl.puts(newctl_bat)
+        end
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeoctl)
+        FileUtils.chmod(0700, nuxeoctl)
+        FileUtils.chown(user_info.uid, user_info.gid, nuxeoctl_bat)
+        FileUtils.chmod(0700, nuxeoctl_bat)
+
+    end
+
+    def setup_nuxeo(user_info, instance_base)
+        nuxeo_home_dir = ::File.join(instance_base, "server")
         nuxeo_conf_dir = ::File.join(instance_base, "conf")
         nuxeo_conf_file = ::File.join(nuxeo_conf_dir, "nuxeo.conf")
         nuxeo_data_dir = ::File.join(nuxeo_home_dir, "nxserver", "data")
         realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
+        realaltnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "alt-nuxeoctl")
         nuxeoctl = ::File.join(instance_base, "nuxeoctl")
+        altnuxeoctl = ::File.join(instance_base, "altnuxeoctl")
 
         # Get version from deployed nuxeo.distribution
         distrib_props = ::File.join(nuxeo_home_dir, "templates", "common", "config", "distribution.properties")
@@ -302,6 +361,14 @@ class Chef
         FileUtils.chown(user_info.uid, user_info.gid, nuxeoctl)
         FileUtils.chmod(0700, realnuxeoctl)
         FileUtils.chmod(0700, nuxeoctl)
+        ::File.open(altnuxeoctl, 'w') do |ctl|
+            ctl.puts("#!/bin/bash\n")
+            ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
+            ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
+            ctl.puts("#{realaltnuxeoctl} --gui=false $@\n")
+        end
+        FileUtils.chown(user_info.uid, user_info.gid, altnuxeoctl)
+        FileUtils.chmod(0700, altnuxeoctl)
 
         # install packages
         installed_packages = []
@@ -313,69 +380,44 @@ class Chef
                 state = id
                 id = ''
             end
-            # nil id => use the platform version
+            # nil id => use the name
             if id.empty? then
-                id = name + '-' + version_full
+                id = name
             end
             if Integer(state) > 2 then
-                if version_int >= 5006000 then
+                if version_int >= 5005000 then
                     installed_packages << id
                 else
-                    # Pre-5.6 can't fetch from marketplace
+                    # Pre-5.5 doesn't have base packages
                     if id.include?("nuxeo-content-browser") or
                        id.include?("nuxeo-dm") or
                        id.include?("nuxeo-dam") or
                        id.include?("nuxeo-social-collaboration") or
                        id.include?("nuxeo-cmf") then
-                        installed_packages << id
+                        Chef::Log.warn("Ignoring package #{id} for Nuxeo < 5.5")
                     else
-                        Chef::Log.warn("Ignoring package #{id} for Nuxeo < 5.6")
+                        installed_packages << id
                     end
                 end
             end
         end
 
-        if version_int < 5005000 then
-            # Pre-5.5 doesn't have mp-install
-            Chef::Log.warn("Version is < 5.5 - ignoring packages")
-        else
-            if installed_packages.count() > 0 then
-                if version_int < 5006000 then
-                    # Pre-5.6 doesn't have mp-init
-                    wizard_dir = ::File.join(nuxeo_home_dir, "setupWizardDownloads")
-                    files_to_add = []
-                    Dir.foreach(wizard_dir) do |wizard_file|
-                        if not wizard_file.include?('.') then
-                            files_to_add << ::File.join("setupWizardDownloads", wizard_file)
-                        end
-                    end
-                    if files_to_add.length() >0 then
-                        mpadd = Chef::Resource::Execute.new("mpadd-#{@new_resource.id}", run_context)
-                        mpadd.command("#{nuxeoctl} mp-add " + files_to_add.join(' '))
-                        mpadd.user(user_info.name)
-                        mpadd.group(user_info.gid)
-                        mpadd.umask(0077)
-                        mpadd.run_action(:run)
-                    end
-                else
-                    mpinit = Chef::Resource::Execute.new("mpinit-#{@new_resource.id}", run_context)
-                    mpinit.command("#{nuxeoctl} -q mp-init")
-                    mpinit.user(user_info.name)
-                    mpinit.group(user_info.gid)
-                    mpinit.umask(0077)
-                    mpinit.run_action(:run)
-                end
-                mpinstall = Chef::Resource::Execute.new("mpinstall-#{@new_resource.id}", run_context)
-                if version_int < 5006000 then
-                    mpinstall.command("#{nuxeoctl} mp-install #{installed_packages.join(" ")}")
-                else
-                    mpinstall.command("#{nuxeoctl} -q --accept=true --relax=true mp-install #{installed_packages.join(" ")}")
-                end
-                mpinstall.user(user_info.name)
-                mpinstall.group(user_info.gid)
-                mpinstall.umask(0077)
-                mpinstall.run_action(:run)
+        if installed_packages.count() > 0 then
+            if version_int >= 5005000 then
+                # Pre-5.5 doesn't have base packages
+                mpinit = Chef::Resource::Execute.new("mpinit-#{@new_resource.id}", run_context)
+                mpinit.command("#{altnuxeoctl} -q mp-init")
+                mpinit.user(user_info.name)
+                mpinit.group(user_info.gid)
+                mpinit.umask(0077)
+                mpinit.run_action(:run)
             end
+            mpinstall = Chef::Resource::Execute.new("mpinstall-#{@new_resource.id}", run_context)
+            mpinstall.command("#{altnuxeoctl} -q --accept=true --relax=true mp-install #{installed_packages.join(" ")}")
+            mpinstall.user(user_info.name)
+            mpinstall.group(user_info.gid)
+            mpinstall.umask(0077)
+            mpinstall.run_action(:run)
         end
     end
 

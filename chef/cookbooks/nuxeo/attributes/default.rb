@@ -19,3 +19,5 @@ default["distributions"]["cmf-1.8"]["filename"] = "nuxeo-case-management-distrib
 default["distributions"]["cmf-1.8"]["url"] = "http://cdn.nuxeo.com/cmf-1.8/nuxeo-case-management-distribution-1.8-tomcat-cmf.zip"
 default["distributions"]["cmf-1.8"]["sha256sum"] = "9e2dc0d41056807b66625b1922c563b17b5d98d311cc71aada7abfe5fb43f40e"
 
+default["launcher"]["url"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-snapshots&g=org.nuxeo&a=nuxeo-launcher&v=5.6-SNAPSHOT&e=jar&c=jar-with-dependencies"
+default["resources"]["url"] = "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=public-snapshots&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-resources&v=5.6-SNAPSHOT&e=zip&c=bin"
