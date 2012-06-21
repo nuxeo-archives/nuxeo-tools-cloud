@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys
+import os, sys, types
 
 # pre-validation
 if os.getuid() != 0:
@@ -206,24 +206,34 @@ for instance_key in instances_root.keys():
         if conf.has_key("nuxeo.url"): del conf["nuxeo.url"]
 
     # Override paths
-        conf["nuxeo.data.dir"] = os.path.join(instance_base, "data")
-        conf["nuxeo.log.dir"] = os.path.join(instance_base, "logs")
-        conf["nuxeo.tmp.dir"] = os.path.join(instance_base, "tmp")
-        conf["nuxeo.pid.dir"] = instance_base
+    conf["nuxeo.data.dir"] = os.path.join(instance_base, "data")
+    conf["nuxeo.log.dir"] = os.path.join(instance_base, "logs")
+    conf["nuxeo.tmp.dir"] = os.path.join(instance_base, "tmp")
+    conf["nuxeo.pid.dir"] = instance_base
         
     attributes["instances"][instance_id]["nuxeoconf"] = conf
 
     # Add templates info
     basetemplates = []
-    for basetemplate in instance["configuration"]["basetemplates"]:
-        if basetemplate == "custom":
-            print "Ignoring template: custom"
+    if instance["configuration"]["basetemplates"].has_key("template"):
+        bt = instance["configuration"]["basetemplates"]["template"]
+        if type(bt) == types.ListType:
+            for basetemplate in bt:
+                if basetemplate == "custom":
+                    print "Ignoring custom template: custom"
+                else:
+                    basetemplates.append(basetemplate)
         else:
-            basetemplates.append(basetemplate)
+            basetemplates.append(bt)
     attributes["instances"][instance_id]["basetemplates"] = basetemplates
 
-    for usertemplate in instance["configuration"]["usertemplates"]:
-        print "Ignoring template:", usertemplate
+    if instance["configuration"]["usertemplates"].has_key("template"):
+        ut = instance["configuration"]["usertemplates"]["template"]
+        if type(ut) == types.ListType:
+            for usertemplate in ut:
+                print "Ignoring custom template: " + usertemplate
+        else:
+            print "Ignoring custom template: " + ut
 
     packages = {}
     distversion = instance["distribution"]["version"]
