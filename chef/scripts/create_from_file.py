@@ -269,8 +269,8 @@ nodefile.close()
 
 # run chef-solo
 print "Starting chef process"
-#cmd = ['chef-solo', '-c', conffilename, '-j', nodefilename]
-cmd = ['chef-solo', '-l', 'debug', '-c', conffilename, '-j', nodefilename]
+cmd = ['chef-solo', '-c', conffilename, '-j', nodefilename]
+#cmd = ['chef-solo', '-l', 'debug', '-c', conffilename, '-j', nodefilename]
 try:
     subprocess.check_call(cmd, shell = False)
 except:

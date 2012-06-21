@@ -31,7 +31,70 @@ class Chef
 
     def load_current_resource
         @current_resource = Chef::Resource::NuxeoNxinstance.new(@new_resource.name)
+        @current_resource.basedir(@new_resource.basedir)
+        if ::File.exists?(@current_resource.basedir) then
+            stat = ::File.stat(@current_resource.basedir)
+            @current_resource.user(Etc.getpwuid(stat.uid).name)
+            @current_resource.group(Etc.getgrgid(stat.gid).name)
+            # Get platform from deployed nuxeo.distribution
+            distrib_props = ::File.join(@current_resource.basedir, "server", "templates", "common", "config", "distribution.properties")
+            dist_name = nil
+            dist_version = nil
+            ::File.open(distrib_props, 'r') do | propsfile|
+                while (line = propsfile.gets()) do
+                    key = line.split('=')[0].strip()
+                    value = line.split('=')[1]
+                    if key == "org.nuxeo.distribution.name" then
+                        dist_name = value.strip()
+                    end
+                    if key == "org.nuxeo.distribution.version" then
+                        dist_version = value.strip()
+                    end
+                end
+            end
+            @current_resource.distrib(dist_name + '-' + dist_version)
+            # Get data dir from nuxeo.conf
+            nuxeo_conf = ::File.join(@current_resource.basedir, "conf", "nuxeo.conf")
+            nuxeoconf = {}
+            if ::File.exists?(nuxeo_conf) then
+                ::File.open(nuxeo_conf, 'r') do |conffile|
+                    while (line = conffile.gets()) do
+                        key = line.split('=')[0].strip()
+                        value = line.split('=')[1]
+                        nuxeoconf[key.strip()] = value.strip()
+                    end
+                end
+                @current_resource.nuxeoconf(nuxeoconf)
+                nuxeo_data_dir = nuxeoconf["nuxeo.data.dir"] || ::File.join(@current_resource.basedir, "data")
+                instance_clid = ::File.join(nuxeo_data_dir, "instance.clid")
+                clidlines = []
+                if ::File.exists?(instance_clid) then
+                    ::File.open(instance_clid, 'r') do |clidfile|
+                        while (line = clidfile.gets()) do
+                            clidlines << line.strip()
+                        end
+                    end
+                    if clidlines.length() > 1 then
+                        @current_resource.clid(clidlines[0] + '--' + clidlines[1])
+                    else
+                        @current_resource.clid(nil)
+                    end
+                else
+                    @current_resource.clid(nil)
+                end
+            else
+                @current_resource.nuxeoconf(nil)
+                @current_resource.clid(nil)
+            end
+        else
+            @current_resource.user(nil)
+            @current_resource.group(nil)
+            @current_resource.distrib(nil)
+            @current_resource.nuxeoconf(nil)
+            @current_resource.clid(nil)
+        end
         # TODO
+        puts "Current resource: " + @current_resource.inspect()
     end
 
     def action_create
