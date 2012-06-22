@@ -40,19 +40,21 @@ class Chef
             distrib_props = ::File.join(@current_resource.basedir, "server", "templates", "common", "config", "distribution.properties")
             dist_name = nil
             dist_version = nil
-            ::File.open(distrib_props, 'r') do | propsfile|
-                while (line = propsfile.gets()) do
-                    key = line.split('=')[0].strip()
-                    value = line.split('=')[1]
-                    if key == "org.nuxeo.distribution.name" then
-                        dist_name = value.strip()
-                    end
-                    if key == "org.nuxeo.distribution.version" then
-                        dist_version = value.strip()
+            if ::File.exists?(distrib_props) then
+                ::File.open(distrib_props, 'r') do | propsfile|
+                    while (line = propsfile.gets()) do
+                        key = line.split('=')[0].strip()
+                        value = line.split('=')[1]
+                        if key == "org.nuxeo.distribution.name" then
+                            dist_name = value.strip()
+                        end
+                        if key == "org.nuxeo.distribution.version" then
+                            dist_version = value.strip()
+                        end
                     end
                 end
+                @current_resource.distrib(dist_name + '-' + dist_version)
             end
-            @current_resource.distrib(dist_name + '-' + dist_version)
             # Get data dir from nuxeo.conf
             nuxeo_conf = ::File.join(@current_resource.basedir, "conf", "nuxeo.conf")
             nuxeoconf = {}
