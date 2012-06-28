@@ -204,6 +204,10 @@ for instance_key in instances_root.keys():
         # Override IP and URL
         conf["nuxeo.bind.address"] = "0.0.0.0"
         if conf.has_key("nuxeo.url"): del conf["nuxeo.url"]
+        if conf.has_key("nuxeo.loopback.url"):
+            if conf.has_key("nuxeo.server.http.port"): http_port = conf["nuxeo.server.http.port"]
+            else: http_port = "8080"
+            conf["nuxeo.loopback.url"] = "http://127.0.0.1:" + http_port + "/nuxeo"
 
     # Override paths
     conf["nuxeo.data.dir"] = os.path.join(instance_base, "data")

@@ -1,4 +1,5 @@
 require 'chef/provider'
+require 'chef/mixin/command'
 require 'etc'
 require 'uri'
 
@@ -25,78 +26,47 @@ class Chef
         super
         rubyzip = Chef::Resource::ChefGem.new("rubyzip", run_context)
         rubyzip.run_action(:install)
+        json = Chef::Resource::ChefGem.new("json", run_context)
+        json.run_action(:install)
         Gem.clear_paths()
         require 'zip/zip'
+        require 'json'
     end
 
     def load_current_resource
         @current_resource = Chef::Resource::NuxeoNxinstance.new(@new_resource.name)
         @current_resource.basedir(@new_resource.basedir)
-        if ::File.exists?(@current_resource.basedir) then
+        if ::File.exists?(::File.join(@current_resource.basedir, "server")) then
             stat = ::File.stat(@current_resource.basedir)
             @current_resource.user(Etc.getpwuid(stat.uid).name)
             @current_resource.group(Etc.getgrgid(stat.gid).name)
-            # Get platform from deployed nuxeo.distribution
-            distrib_props = ::File.join(@current_resource.basedir, "server", "templates", "common", "config", "distribution.properties")
-            dist_name = nil
-            dist_version = nil
-            if ::File.exists?(distrib_props) then
-                ::File.open(distrib_props, 'r') do | propsfile|
-                    while (line = propsfile.gets()) do
-                        key = line.split('=')[0].strip()
-                        value = line.split('=')[1]
-                        if key == "org.nuxeo.distribution.name" then
-                            dist_name = value.strip()
-                        end
-                        if key == "org.nuxeo.distribution.version" then
-                            dist_version = value.strip()
-                        end
-                    end
-                end
-                @current_resource.distrib(dist_name + '-' + dist_version)
-            end
-            # Get data dir from nuxeo.conf
-            nuxeo_conf = ::File.join(@current_resource.basedir, "conf", "nuxeo.conf")
-            nuxeoconf = {}
-            if ::File.exists?(nuxeo_conf) then
-                ::File.open(nuxeo_conf, 'r') do |conffile|
-                    while (line = conffile.gets()) do
-                        key = line.split('=')[0].strip()
-                        value = line.split('=')[1]
-                        nuxeoconf[key.strip()] = value.strip()
-                    end
+            # Get current resource from deployed distribution's "showconf"
+            begin
+                path = ENV["PATH"] + ":" + @current_resource.basedir
+                command = ["altnuxeoctl", "--json", "showconf"]
+                args = {}
+                args[:cwd] = @current_resource.basedir
+                args[:user] = @current_resource.user
+                args[:group] = @current_resource.group
+                args[:environment] = {"PATH" => path}
+                status, stdout, stderr = Chef::Mixin::Command.output_of_command(command, args)
+                current_config = JSON.parse(stdout)["instance"]
+                Chef::Log.info("ShowConf: " + current_config.to_s()) # DEBUG
+                @current_resource.distrib(current_config["distribution"]["name"] + "-" + current_config["distribution"]["version"])
+                @current_resource.clid(current_config["clid"])
+                nuxeoconf = {}
+                current_config["configuration"]["keyvals"]["keyval"].each do |keypair|
+                    nuxeoconf[keypair["key"]] = keypair["value"]
                 end
                 @current_resource.nuxeoconf(nuxeoconf)
-                nuxeo_data_dir = nuxeoconf["nuxeo.data.dir"] || ::File.join(@current_resource.basedir, "data")
-                instance_clid = ::File.join(nuxeo_data_dir, "instance.clid")
-                clidlines = []
-                if ::File.exists?(instance_clid) then
-                    ::File.open(instance_clid, 'r') do |clidfile|
-                        while (line = clidfile.gets()) do
-                            clidlines << line.strip()
-                        end
-                    end
-                    if clidlines.length() > 1 then
-                        @current_resource.clid(clidlines[0] + '--' + clidlines[1])
-                    else
-                        @current_resource.clid(nil)
-                    end
-                else
-                    @current_resource.clid(nil)
-                end
-            else
-                @current_resource.nuxeoconf(nil)
-                @current_resource.clid(nil)
+                # TODO: templates, packages
+
+            rescue
+                Chef::Log.error("Could not parse values for current distribution")
             end
-        else
-            @current_resource.user(nil)
-            @current_resource.group(nil)
-            @current_resource.distrib(nil)
-            @current_resource.nuxeoconf(nil)
-            @current_resource.clid(nil)
+
         end
-        # TODO
-        puts "Current resource: " + @current_resource.inspect()
+        puts "Current resource: " + @current_resource.inspect() # DEBUG
     end
 
     def action_create
@@ -430,7 +400,7 @@ class Chef
             ctl.puts("#!/bin/bash\n")
             ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
             ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
-            ctl.puts("#{realaltnuxeoctl} --gui=false $@\n")
+            ctl.puts("#{realaltnuxeoctl} --gui=false $@ | grep -v 'is deprecated'\n")
         end
         FileUtils.chown(user_info.uid, user_info.gid, altnuxeoctl)
         FileUtils.chmod(0700, altnuxeoctl)
