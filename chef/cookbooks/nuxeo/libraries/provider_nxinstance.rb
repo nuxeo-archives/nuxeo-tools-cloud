@@ -428,7 +428,7 @@ class Chef
             ctl.puts("#!/bin/bash\n")
             ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
             ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
-            ctl.puts("#{realaltnuxeoctl} --gui=false $@\n")
+            ctl.puts("#{realaltnuxeoctl} --gui=false --hide-deprecation-warnings $@\n")
         end
         FileUtils.chown(user_info.uid, user_info.gid, altnuxeoctl)
         FileUtils.chmod(0700, altnuxeoctl)
