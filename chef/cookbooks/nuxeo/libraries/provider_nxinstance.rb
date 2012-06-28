@@ -51,7 +51,6 @@ class Chef
                 args[:environment] = {"PATH" => path}
                 status, stdout, stderr = Chef::Mixin::Command.output_of_command(command, args)
                 current_config = JSON.parse(stdout)["instance"]
-                Chef::Log.info("ShowConf: " + current_config.to_s()) # DEBUG
                 @current_resource.distrib(current_config["distribution"]["name"] + "-" + current_config["distribution"]["version"])
                 @current_resource.clid(current_config["clid"])
                 nuxeoconf = {}
@@ -74,14 +73,24 @@ class Chef
                     end
                 end
                 @current_resource.packages(pkghash)
-                # TODO: templates
-
+                @current_resource.dbtemplate(current_config["dbtemplate"])
+                bt_base = current_config["basetemplates"]
+                if bt_base != nil then
+                    basetemplates = current_config["basetemplates"]["template"]
+                    if basetemplates == nil or basetemplates == {} then
+                        bastemplates = []
+                    elsif basetemplates.kind_of?(String) then
+                        basetemplates = [basetemplates]
+                    end
+                else
+                    basetemplates = []
+                end
+                @current_resource.basetemplates(basetemplates)
             rescue
                 Chef::Log.error("Could not parse values for current distribution")
             end
 
         end
-        puts "Current resource: " + @current_resource.inspect() # DEBUG
     end
 
     def action_create
@@ -233,7 +242,11 @@ class Chef
             unzip_file(filename, instance_base)
         end
 
-        FileUtils.ln_sf(nuxeo_home_dir, ::File.join(instance_base, "server"))
+        symlink = ::File.join(instance_base, "server")
+        if ::File.exists?(symlink) then
+            FileUtils.rm(symlink)
+        end
+        FileUtils.ln_sf(nuxeo_home_dir, symlink)
 
         FileUtils.chown_R(user_info.uid, user_info.gid, instance_base)
 
@@ -415,7 +428,7 @@ class Chef
             ctl.puts("#!/bin/bash\n")
             ctl.puts("export NUXEO_CONF=#{nuxeo_conf_file}\n")
             ctl.puts("export NUXEO_HOME=#{nuxeo_home_dir}\n")
-            ctl.puts("#{realaltnuxeoctl} --gui=false $@ | grep -v 'is deprecated'\n")
+            ctl.puts("#{realaltnuxeoctl} --gui=false $@\n")
         end
         FileUtils.chown(user_info.uid, user_info.gid, altnuxeoctl)
         FileUtils.chmod(0700, altnuxeoctl)
