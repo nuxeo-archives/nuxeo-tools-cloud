@@ -55,11 +55,26 @@ class Chef
                 @current_resource.distrib(current_config["distribution"]["name"] + "-" + current_config["distribution"]["version"])
                 @current_resource.clid(current_config["clid"])
                 nuxeoconf = {}
-                current_config["configuration"]["keyvals"]["keyval"].each do |keypair|
-                    nuxeoconf[keypair["key"]] = keypair["value"]
+                keyvals = current_config["configuration"]["keyvals"]["keyval"]
+                if keyvals.kind_of?(Hash) then
+                    keyvals = [keyvals]
+                end
+                keyvals.each do |keyval|
+                    nuxeoconf[keyval["key"]] = keyval["value"]
                 end
                 @current_resource.nuxeoconf(nuxeoconf)
-                # TODO: templates, packages
+                packages = current_config["packages"]["package"]
+                if packages.kind_of?(Hash) then
+                    packages = [packages]
+                end
+                pkghash = {}
+                packages.each do |package|
+                    if package["state"] == "5" then
+                        pkghash[package["name"]] = [package["id"], package["version"]]
+                    end
+                end
+                @current_resource.packages(pkghash)
+                # TODO: templates
 
             rescue
                 Chef::Log.error("Could not parse values for current distribution")
