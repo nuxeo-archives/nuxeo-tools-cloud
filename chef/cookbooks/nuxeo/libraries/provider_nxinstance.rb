@@ -42,6 +42,25 @@ class Chef
             @current_resource.group(Etc.getgrgid(stat.gid).name)
             # Get current resource from deployed distribution's "showconf"
             begin
+                # Get platform from deployed nuxeo.distribution (workaround for broken packages overriding vname/version)
+                distrib_props = ::File.join(@current_resource.basedir, "server", "templates", "common", "config", "distribution.properties")
+                dist_name = nil
+                dist_version = nil
+                if ::File.exists?(distrib_props) then
+                    ::File.open(distrib_props, 'r') do | propsfile|
+                        while (line = propsfile.gets()) do
+                            key = line.split('=')[0].strip()
+                            value = line.split('=')[1]
+                            if dist_name == nil and key == "org.nuxeo.distribution.name" then
+                                dist_name = value.strip()
+                            elsif dist_version == nil and key == "org.nuxeo.distribution.version" then
+                                dist_version = value.strip()
+                            end
+                        end
+                    end
+                    @current_resource.distrib(dist_name + '-' + dist_version)
+                end
+                # Get the rest from showconf
                 path = ENV["PATH"] + ":" + @current_resource.basedir
                 command = ["altnuxeoctl", "--json", "showconf"]
                 args = {}
@@ -51,7 +70,9 @@ class Chef
                 args[:environment] = {"PATH" => path}
                 status, stdout, stderr = Chef::Mixin::Command.output_of_command(command, args)
                 current_config = JSON.parse(stdout)["instance"]
-                @current_resource.distrib(current_config["distribution"]["name"] + "-" + current_config["distribution"]["version"])
+                if @current_resource.distrib == nil then
+                    @current_resource.distrib(current_config["distribution"]["name"] + "-" + current_config["distribution"]["version"])
+                end
                 @current_resource.clid(current_config["clid"])
                 nuxeoconf = {}
                 keyvals = current_config["configuration"]["keyvals"]["keyval"]
@@ -96,10 +117,19 @@ class Chef
     def action_create
         Chef::Log.info("ACTION: create")
         user_info = get_or_create_user
-        instance_base = @new_resource.basedir || ::File.join(user_info.dir, "nxinstance-#{@new_resource.id}")
-        unzip_distribution(user_info, instance_base)
-        add_new_launcher(user_info, instance_base)
-        setup_nuxeo(user_info, instance_base)
+        if @new_resource.basedir == nil then
+            @new_resource.basedir = ::File.join(user_info.dir, "nxinstance-#{@new_resource.id}")
+        end
+        if @current_resource.distrib != @new_resource.distrib then
+            symlink = ::File.join(current_resource.basedir, "server")
+            if ::File.exists?(symlink) then
+                FileUtils.rm_rf(::File.readlink(symlink))
+                FileUtils.rm(symlink)
+            end
+            unzip_distribution(user_info)
+            add_new_launcher(user_info)
+        end
+        setup_nuxeo(user_info)
     end
 
     def action_delete
@@ -150,7 +180,7 @@ class Chef
         end
     end
 
-    def unzip_distribution(user_info, instance_base)
+    def unzip_distribution(user_info)
         # Get distribution source and destination - look inside zip if needed
         distrib_source = "remote"
         filename = nil
@@ -224,33 +254,33 @@ class Chef
         end
 
         # Set up paths
-        nuxeo_home_dir = ::File.join(instance_base, dirname)
+        nuxeo_home_dir = ::File.join(@new_resource.basedir, dirname)
         nuxeo_conf_file = ::File.join(nuxeo_home_dir, "bin", "nuxeo.conf")
 
         Chef::Log.info("########################################################")
         Chef::Log.info("# Instance ID: #{@new_resource.id}")
-        Chef::Log.info("# Instance base: #{instance_base}")
+        Chef::Log.info("# Instance base: #{@new_resource.basedir}")
         Chef::Log.info("# Instance owner: #{user_info.name}")
         Chef::Log.info("# Distribution source (#{distrib_source}): #{source}")
         Chef::Log.info("########################################################")
 
-        FileUtils.mkdir_p(instance_base, :mode => 0700)
+        FileUtils.mkdir_p(@new_resource.basedir, :mode => 0700)
 
         if distrib_source == "dir" then
-            FileUtils.cp_r(filename, instance_base)
+            FileUtils.cp_r(filename, @new_resource.basedir)
         else
-            unzip_file(filename, instance_base)
+            unzip_file(filename, @new_resource.basedir)
         end
 
-        symlink = ::File.join(instance_base, "server")
+        symlink = ::File.join(@new_resource.basedir, "server")
         if ::File.exists?(symlink) then
             FileUtils.rm(symlink)
         end
         FileUtils.ln_sf(nuxeo_home_dir, symlink)
 
-        FileUtils.chown_R(user_info.uid, user_info.gid, instance_base)
+        FileUtils.chown_R(user_info.uid, user_info.gid, @new_resource.basedir)
 
-        Find.find(instance_base) do |entry|
+        Find.find(@new_resource.basedir) do |entry|
             if ::File.basename(entry) == '.' or ::File.basename(entry) == '..' then
                 Find.prune()
             else
@@ -262,7 +292,7 @@ class Chef
         # No dereference for Ruby chown -> use system chown
         chownlink = Chef::Resource::Execute.new("chownlink-#{@new_resource.id}", run_context)
         chownlink.command("chown -h #{user_info.uid}:#{user_info.gid} server")
-        chownlink.cwd(instance_base)
+        chownlink.cwd(@new_resource.basedir)
         chownlink.run_action(:run)
 
         if ::File.exists?(nuxeo_conf_file) then
@@ -273,7 +303,7 @@ class Chef
         end
     end
 
-    def add_new_launcher(user_info, instance_base)
+    def add_new_launcher(user_info)
         # Download current artifacts for launcher and distribution-resources
         launcher_tmp = ::File.join(Dir.tmpdir, "nuxeo-launcher.jar")
         resources_tmp = ::File.join(Dir.tmpdir, "nuxeo-resources.zip")
@@ -296,21 +326,21 @@ class Chef
         remote_resources.run_action(:create_if_missing)
 
         # Add new nuxeo launcher
-        nuxeo_launcher = ::File.join(instance_base, "server", "bin", "alt-nuxeo-launcher.jar")
+        nuxeo_launcher = ::File.join(@new_resource.basedir, "server", "bin", "alt-nuxeo-launcher.jar")
         FileUtils.rm_f(nuxeo_launcher)
         FileUtils.cp(launcher_tmp, nuxeo_launcher)
         FileUtils.chown(user_info.uid, user_info.gid, nuxeo_launcher)
         FileUtils.chmod(0600, nuxeo_launcher)
 
         # Add new nuxeoctl
-        nuxeoctl = ::File.join(instance_base, "server", "bin", "alt-nuxeoctl")
-        nuxeoctl_bat = ::File.join(instance_base, "server", "bin", "alt-nuxeoctl.bat")
+        nuxeoctl = ::File.join(@new_resource.basedir, "server", "bin", "alt-nuxeoctl")
+        nuxeoctl_bat = ::File.join(@new_resource.basedir, "server", "bin", "alt-nuxeoctl.bat")
         FileUtils.rm_f(nuxeoctl)
         FileUtils.rm_f(nuxeoctl_bat)
         Zip::ZipFile.open(resources_tmp) do |zip_file|
             zip_file.each do |f|
                 if f.name == "nuxeoctl" or f.name == "nuxeoctl.bat" then
-                    file_path = ::File.join(instance_base, "server", "bin", "alt-" + f.name)
+                    file_path = ::File.join(@new_resource.basedir, "server", "bin", "alt-" + f.name)
                     FileUtils.mkdir_p(::File.dirname(file_path))
                     zip_file.extract(f, file_path) unless ::File.exist?(file_path)
                 end
@@ -333,15 +363,15 @@ class Chef
 
     end
 
-    def setup_nuxeo(user_info, instance_base)
-        nuxeo_home_dir = ::File.join(instance_base, "server")
-        nuxeo_conf_dir = ::File.join(instance_base, "conf")
+    def setup_nuxeo(user_info)
+        nuxeo_home_dir = ::File.join(@new_resource.basedir, "server")
+        nuxeo_conf_dir = ::File.join(@new_resource.basedir, "conf")
         nuxeo_conf_file = ::File.join(nuxeo_conf_dir, "nuxeo.conf")
         nuxeo_data_dir = ::File.join(nuxeo_home_dir, "nxserver", "data")
         realnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "nuxeoctl")
         realaltnuxeoctl = ::File.join(nuxeo_home_dir, "bin", "alt-nuxeoctl")
-        nuxeoctl = ::File.join(instance_base, "nuxeoctl")
-        altnuxeoctl = ::File.join(instance_base, "altnuxeoctl")
+        nuxeoctl = ::File.join(@new_resource.basedir, "nuxeoctl")
+        altnuxeoctl = ::File.join(@new_resource.basedir, "altnuxeoctl")
 
         # Get version from deployed nuxeo.distribution
         distrib_props = ::File.join(nuxeo_home_dir, "templates", "common", "config", "distribution.properties")
