@@ -1,0 +1,50 @@
+---
+# file: slave.yml
+- hosts: all
+  gather_facts: no
+  user: ubuntu
+  sudo: yes
+  tasks:
+  - name: Configure user 'ubuntu'
+    copy: src=templates/ubuntu_authorized_keys dest=~ubuntu/.ssh/authorized_keys
+          owner=ubuntu group=ubuntu mode=600 backup=yes
+
+  - name: Configure user 'jenkins'
+    file: path=/mnt/jenkins state=directory
+  - file: src=/mnt/jenkins dest=/opt/jenkins state=link
+  - user: name=jenkins home=/opt/jenkins state=present shell=/bin/bash
+  - shell: cp -rn ~ubuntu/.ssh ~jenkins/
+  - file: path=~jenkins/.ssh state=directory recurse=yes
+          mode=600 owner=jenkins group=jenkins
+  - copy: src=templates/91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
+          mode=440
+  - copy: src=~/.ssh/jenkins_id_rsa dest=~jenkins/.ssh/id_rsa
+          owner=jenkins group=jenkins mode=600 backup=no
+  - copy: src=templates/jenkins_id_rsa.pub dest=~jenkins/.ssh/id_rsa.pub
+          owner=jenkins group=jenkins mode=600 backup=no
+  - copy: src=templates/jenkins_ssh_config dest=~jenkins/.ssh/config
+          owner=jenkins group=jenkins mode=600 backup=no
+  - copy: src=/opt/build/hudson/m2remote/settings.xml dest=~jenkins/.m2/settings.xml
+          owner=jenkins group=jenkins
+  - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
+          owner=jenkins group=jenkins
+
+  - name: Packages upgrade/install
+    apt: upgrade=yes
+  - apt: state=latest pkg=openjdk-6-jdk,openjdk-7-jdk,git,mercurial,subversion,firefox,chromium-browser,ant,ant-contrib,imagemagick,ffmpeg,ffmpeg2theora,lynx,sysstat,logtail,gawk,vim
+    # Funkload
+  - apt: state=latest pkg=python-dev,python-setuptools,python-webunit,python-docutils,gnuplot,python-reportlab,python-pypdf
+  - apt: state=latest pkg=tcpwatch-httpproxy install_recommends=no
+  - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
+  - shell: update-alternatives --set editor /usr/bin/vim.basic
+
+  - name: Tooling
+    file: path=/mnt/build state=directory owner=root group=root
+  - file: src=/mnt/build dest=/opt/build state=link
+  - copy: src=/opt/build/keystores dest=/opt/build/keystores recurse=yes
+          owner=jenkins group=jenkins
+  - copy: src=/opt/build/tools/apache-maven-2.2.1 dest=/opt/build/tools/apache-maven-2.2.1 recurse=yes
+  - copy: src=/opt/build/tools/gradle-1.2 dest=/opt/build/tools/gradle-1.2 recurse=yes
+
+
+
