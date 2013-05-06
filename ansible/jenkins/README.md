@@ -1,11 +1,21 @@
-## Ansible playbook for Jenkins slave image generation
+# Ansible playbook for Jenkins slave image generation
+
+Generate an Ubuntu image for use by Jenkins as a slave.
+
+Technical details:
+
+ - based on ami-ce7b6fba (from http://alestic.com/).
+ - m1.large
+
+## Generate/update image
+
+ansible-playbook -i production slave.yml
+
+## Testing
 
 ansible-playbook -i stage slave.yml -v -c local
+
 ansible-playbook -i stage slave.yml [-K]
-ansible-playbook -i production slave.yml
+
 ansible-playbook playbook.yml --list-hosts
 
-
-http://alestic.com/
-ami-ce7b6fba
-m1.large
