@@ -15,6 +15,7 @@
     file: path=/opt/jenkins state=directory
   - user: name=jenkins home=/opt/jenkins state=present shell=/bin/bash
   - file: path=~jenkins/ state=directory owner=jenkins group=jenkins
+  - file: path=~jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
   - authorized_key: user=jenkins key="{{ item }}"
     with_file:
     - ~/.ssh/id_rsa.pub
