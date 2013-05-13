@@ -13,7 +13,7 @@ ansible-playbook -i production slave.yml
 
 ## Testing
 
-ansible-playbook -i stage slave.yml -v -c local
+ansible-playbook -i stage slave.yml -v -c local [--ask-sudo-pass]
 
 ansible-playbook -i stage slave.yml [-K]
 
