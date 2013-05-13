@@ -12,14 +12,14 @@
     - templates/Jenkins_aws_system.pem.pub
 
   - name: Configure user 'jenkins'
-    file: path=/mnt/jenkins state=directory
-  - file: src=/mnt/jenkins path=/opt/jenkins state=link
+    file: path=/opt/jenkins state=directory
   - user: name=jenkins home=/opt/jenkins state=present shell=/bin/bash
   - file: path=~jenkins/ state=directory owner=jenkins group=jenkins
   - authorized_key: user=jenkins key="{{ item }}"
     with_file:
     - ~/.ssh/id_rsa.pub
     - templates/jenkins_id_rsa.pub
+    - templates/Jenkins_aws_system.pem.pub
   - copy: src=templates/91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
           mode=440
   - copy: src=~/.ssh/jenkins_id_rsa dest=~jenkins/.ssh/id_rsa
@@ -69,8 +69,7 @@
   - shell: update-alternatives --set editor /usr/bin/vim.basic
 
   - name: Tooling
-    file: path=/mnt/build state=directory owner=root group=root
-  - file: src=/mnt/build path=/opt/build state=link
+    file: path=/opt/build state=directory owner=root group=root
   # TODO: find another solution than local rsync
 #  - file: path=/opt/build/keystores state=directory owner=jenkins group=jenkins
 #  - local_action: command rsync -a /opt/build/keystores
@@ -79,6 +78,8 @@
   - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
           owner=jenkins group=jenkins
   - file: path=/opt/build/tools state=directory owner=jenkins group=jenkins
+  - copy: src=templates/use_mnt.sh dest=~jenkins/use_mnt.sh
+          mode=755 owner=jenkins group=jenkins
 
   - name: Maven 2.x
     uri: creates=/opt/build/tools/maven2
@@ -109,6 +110,4 @@
   - file: src=/opt/build/tools/gradle-1.6 path=/opt/build/tools/gradle state=link
   - shell: update-alternatives --install /usr/bin/gradle gradle /opt/build/tools/gradle/bin/gradle 1
   - file: path=/tmp/gradle-1.6-bin.zip state=absent
-
-
 
