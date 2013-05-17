@@ -5,7 +5,7 @@ Generate an Ubuntu image for use by Jenkins as a slave.
 Technical details:
 
  - based on ami-ce7b6fba (from http://alestic.com/).
- - m1.large
+ - m1.xlarge
 
 ## Generate/update image
 
@@ -25,8 +25,14 @@ Log on https://console.aws.amazon.com/ec2/home?region=eu-west-1#s=Instances
 
 ### Jenkins slave template generation
 
-Generate an instance from ami-ce7b6fba with m1.large type.  
-Set "Jenkins slave template" as label.  
+Launch an instance:
+
+ - from community AMI: ami-ce7b6fba 
+ - with m1.small type
+ - set "Jenkins slave template" as name
+ - associate the key pair
+ - set default security group (it's preconfigured to fit requirements)
+ 
 Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.  
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
@@ -34,7 +40,8 @@ Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
      
 ### Jenkins slave AMI generation
 
-Select the instance on AWS interface and click "Action / Create Image (EBS AMI)".  
+Select the "Jenkins slave template" instance on AWS interface and click "Action / Create Image (EBS AMI)".  
+Instance Type: M1Xlarge.  
 Set "Jenkins slave image" as label.  
 Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images:  
 Copy the AMI ID (for instance ami-a3b1a7d7).
@@ -42,7 +49,8 @@ Copy the AMI ID (for instance ami-a3b1a7d7).
 ### Jenkins configuration
 
 Browse https://qa.nuxeo.org/jenkins/configure#section147  
-In the "Cloud / Amazon EC2 / AMIs" section, set the AMI ID, check its availability ("Check AMI" button) and save. 
+In the "Cloud / Amazon EC2 / AMIs" section, set the AMI ID and check its availability ("Check AMI" button).
+ 
 
 
 Jobs must set "ondemand" as slave restriction to use that EC2 image.

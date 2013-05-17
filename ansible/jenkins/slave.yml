@@ -34,7 +34,7 @@
           owner=jenkins group=jenkins
 
   - name: Packages upgrade/install
-    apt: upgrade=yes
+    apt: upgrade=yes update_cache=yes
   - apt: state=latest pkg=$item
     with_items:
     - openjdk-6-jdk
@@ -114,3 +114,8 @@
   - shell: update-alternatives --install /usr/bin/gradle gradle /opt/build/tools/gradle/bin/gradle 1
   - file: path=/tmp/gradle-1.6-bin.zip state=absent
 
+  - name: Spot instance Jenkins callback script
+    get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py 
+             dest=/usr/bin/userdata mode=0750
+  - shell: '! grep userdata /etc/rc.local && sed -i "s,^exit 0,python /usr/bin/userdata\\n&," /etc/rc.local'
+  - shell: "! grep 176.57.246.10 /etc/hosts && echo '\n176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org\n' >> /etc/hosts"
