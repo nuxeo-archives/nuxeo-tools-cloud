@@ -22,7 +22,7 @@
     - templates/jenkins_id_rsa.pub
     - templates/Jenkins_aws_system.pem.pub
   - copy: src=templates/91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
-          mode=440
+          mode=440 owner=root group=root
   - copy: src=~/.ssh/jenkins_id_rsa dest=~jenkins/.ssh/id_rsa
           owner=jenkins group=jenkins mode=600 backup=no
   - copy: src=templates/jenkins_id_rsa.pub dest=~jenkins/.ssh/id_rsa.pub
@@ -33,16 +33,25 @@
   - copy: src=/opt/build/hudson/m2remote/settings.xml dest=~jenkins/.m2/settings.xml
           owner=jenkins group=jenkins
 
-  - name: Packages upgrade/install
-    apt: upgrade=yes update_cache=yes
-  - apt: state=latest pkg=$item
+  - name: Upgrade/install current packages
+    shell: apt-get update && apt-get -q -y upgrade
+  - name: Check whether this is ubuntu or debian
+    shell: lsb_release -is
+    register: vendor
+  - name: Upgrade/install firefox on Ubuntu
+    apt: pkg=firefox state=latest
+    when: vendor.stdout == "Ubuntu"
+  - name: Upgrade/install iceweasel on Debian
+    apt: pkg=iceweasel state=latest
+    when: vendor.stdout == "Debian"
+  - name: Upgrade/install dependencies
+    apt: state=latest pkg=$item
     with_items:
     - openjdk-6-jdk
     - openjdk-7-jdk
     - git
     - mercurial
     - subversion
-    - firefox
     - chromium-browser
     - ant
     - ant-contrib
