@@ -71,6 +71,9 @@
     - poppler-utils
     - libreoffice
     - libwpd-tools
+    - xvfb
+    - x11vnc
+    - fluxbox
     # Funkload requirements
     - python-dev
     - python-setuptools
@@ -83,6 +86,10 @@
   - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
   - shell: update-alternatives --set editor /usr/bin/vim.basic
   - file: src=/usr/lib/jvm/java-1.7.0-openjdk-amd64 path=/usr/lib/jvm/java-7-openjdk state=link
+  # Xvfb, x11vnc, fluxbox
+  - copy: src=templates/xvfb dest=/etc/init.d/xvfb
+          mode=755 owner=root group=root
+  - shell: update-rc.d xvfb defaults
 
   - name: Tooling
     file: path=/opt/build state=directory owner=root group=root
