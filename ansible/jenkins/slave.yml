@@ -67,6 +67,10 @@
     - curl
     - unzip
     - moreutils
+    - ufraw
+    - poppler-utils
+    - libreoffice
+    - libwpd-tools
     # Funkload requirements
     - python-dev
     - python-setuptools
@@ -131,6 +135,7 @@
   - file: path=/tmp/gradle-1.6-bin.zip state=absent
 
   - name: Spot instance Jenkins callback script
+  # use https://qa.nuxeo.org/jenkins/plugin/ec2/AMI-Scripts/ubuntu-ami-setup.sh once ec2 plugin upgraded
     get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py 
              dest=/usr/bin/userdata mode=0750
   - lineinfile: dest=/etc/rc.local backup=true state=present
