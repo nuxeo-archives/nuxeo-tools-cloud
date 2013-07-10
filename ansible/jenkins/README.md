@@ -41,8 +41,7 @@ Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 ### Jenkins slave AMI generation
 
 Select the "Jenkins slave template" instance on AWS interface and click "Action / Create Image (EBS AMI)".  
-Instance Type: M1Xlarge.  
-Set "Jenkins slave image" as label.  
+Set "Jenkins slave image ..." as name.  
 Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images:  
 Copy the AMI ID (for instance ami-a3b1a7d7).
 
@@ -50,6 +49,7 @@ Copy the AMI ID (for instance ami-a3b1a7d7).
 
 Browse https://qa.nuxeo.org/jenkins/configure#section147  
 In the "Cloud / Amazon EC2 / AMIs" section, set the AMI ID and check its availability ("Check AMI" button).
+Instance Type: M1Xlarge.  
  
 
 
