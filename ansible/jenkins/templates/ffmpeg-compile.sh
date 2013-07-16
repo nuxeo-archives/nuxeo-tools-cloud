@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Initializing script for making use of /mnt
+# Initializing script for locally compiling ffmpeg if libx264 encoder is missing
 #
 # (C) Copyright 2013 Nuxeo SA (http://nuxeo.com/) and contributors.
 #
@@ -18,7 +18,10 @@
 #   Julien Carsique
 #
 
-mkdir /mnt/repository /mnt/workspace
-chown jenkins:jenkins /mnt/repository /mnt/workspace
-ln -s /mnt/repository ~jenkins/.m2/repository
-ln -s /mnt/workspace ~jenkins/workspace
+# exit if x264 is already available
+x264 --help >/dev/null 2>&1 && exit 0
+git clone https://github.com/nuxeo/ffmpeg-nuxeo /tmp/ffmpeg-nuxeo
+cd /tmp/ffmpeg-nuxeo
+git checkout master
+# libfaac availability is automatically detected
+./build-all.sh

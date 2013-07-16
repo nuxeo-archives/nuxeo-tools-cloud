@@ -90,6 +90,11 @@
   - copy: src=templates/xvfb dest=/etc/init.d/xvfb
           mode=755 owner=root group=root
   - shell: update-rc.d xvfb defaults
+  # FFmpeg build with x264, vpx and AAC support if needed
+  - copy: src=templates/ffmpeg-compile.sh dest=/tmp/ffmpeg-compile.sh
+          mode=755 owner=root group=root
+  - shell: /tmp/ffmpeg-compile.sh
+  - file: path=/tmp/ffmpeg-nuxeo state=absent
 
   - name: Tooling
     file: path=/opt/build state=directory owner=root group=root
