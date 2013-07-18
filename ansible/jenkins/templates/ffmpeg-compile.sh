@@ -18,8 +18,8 @@
 #   Julien Carsique
 #
 
-# exit if x264 is already available
-x264 --help >/dev/null 2>&1 && exit 0
+# exit if x264 is already available and ffmpeg was compiled with libx264
+x264 --help >/dev/null 2>&1 && (ffmpeg 2>&1 |grep libx264) && exit 0
 git clone https://github.com/nuxeo/ffmpeg-nuxeo /tmp/ffmpeg-nuxeo
 cd /tmp/ffmpeg-nuxeo
 git checkout master
