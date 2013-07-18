@@ -56,7 +56,8 @@
     - ant
     - ant-contrib
     - imagemagick
-    - ffmpeg
+    # conflicts with custom build with x264 support
+    # - ffmpeg
     - ffmpeg2theora
     - lynx
     - sysstat
