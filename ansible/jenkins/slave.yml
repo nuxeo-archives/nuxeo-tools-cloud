@@ -157,4 +157,6 @@
     #notify: reload rc.local
   - lineinfile: dest=/etc/hosts create=true backup=true state=present
                 regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
+  - lineinfile: dest=/etc/hosts create=true backup=true state=present
+                regexp='176.57.246.12' line='176.57.246.12 maven.in.nuxeo.com'
 
