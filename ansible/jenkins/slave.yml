@@ -32,6 +32,10 @@
   - file: path=~jenkins/.m2 state=directory owner=jenkins group=jenkins
   - copy: src=/opt/build/hudson/m2remote/settings.xml dest=~jenkins/.m2/settings.xml
           owner=jenkins group=jenkins
+  - copy: src=templates/.profile dest=~jenkins/.profile
+          owner=jenkins group=jenkins backup=no
+  - copy: src=templates/.bashrc dest=~jenkins/.bashrc
+          owner=jenkins group=jenkins backup=no
 
   - name: Upgrade/install current packages
     shell: apt-get update && apt-get -q -y upgrade
