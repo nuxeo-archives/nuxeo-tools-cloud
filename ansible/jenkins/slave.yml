@@ -79,6 +79,7 @@
     - xvfb
     - x11vnc
     - fluxbox
+    - linkchecker
     # Funkload requirements
     - python-dev
     - python-setuptools
