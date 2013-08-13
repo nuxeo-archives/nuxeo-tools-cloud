@@ -7,6 +7,16 @@ Technical details:
  - based on ami-ce7b6fba (from http://alestic.com/).
  - m1.xlarge
 
+## Requirements
+
+ - existing nexus user and group with ID 1003
+ - existing hudson user and group with ID 1005
+ - current user must have SSH access to host target as ubuntu
+ - current user must be sudoer
+ - current user must be member of the hudson group
+ - gargantua:/volume1/Build mounted to /opt/build
+ 
+
 ## Generate/update image
 
 ansible-playbook -i production slave.yml [-v]

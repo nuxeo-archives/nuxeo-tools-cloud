@@ -8,8 +8,10 @@
   - name: Configure user 'ubuntu'
     authorized_key: user=ubuntu key="{{item}}"
     with_file:
-    - ~/.ssh/id_rsa.pub
     - templates/Jenkins_aws_system.pem.pub
+  - authorized_key: user=ubuntu key="{{item}}"
+    with_fileglob:
+    - /opt/build/hudson/authorized_keys/id_*.pub
 
   - name: Configure user 'jenkins'
     file: path=/opt/jenkins state=directory
@@ -18,9 +20,11 @@
   - file: path=~jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
   - authorized_key: user=jenkins key="{{ item }}"
     with_file:
-    - ~/.ssh/id_rsa.pub
     - templates/jenkins_id_rsa.pub
     - templates/Jenkins_aws_system.pem.pub
+  - authorized_key: user=jenkins key="{{ item }}"
+    with_fileglob:
+    - /opt/build/hudson/authorized_keys/id_*.pub
   - copy: src=templates/91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
           mode=440 owner=root group=root
   - copy: src=~/.ssh/jenkins_id_rsa dest=~jenkins/.ssh/id_rsa
@@ -107,10 +111,34 @@
 
   - name: Tooling
     file: path=/opt/build state=directory owner=root group=root
-  # TODO: find another solution than local rsync
-#  - file: path=/opt/build/keystores state=directory owner=jenkins group=jenkins
-#  - local_action: command rsync -a /opt/build/keystores
-#                  jenkins@${inventory_host}:/opt/build/keystores
+  # local rsync not acceptable because of the passphrase-less SSH key requirement
+  # - local_action: shell echo rsync -az --delete /opt/build/keystores
+  #                -e 'ssh -o stricthostkeychecking=no
+  #                        -o userknownhostsfile=/dev/null
+  #                        -o batchmode=yes
+  #                        -o passwordauthentication=no'
+  #                jenkins@${inventory_hostname}:/opt/build/keystores
+  - file: path=/opt/build/keystores state=directory owner=jenkins group=jenkins
+  - copy: owner=jenkins group=jenkins
+          src=/opt/build/keystores/$item dest=/opt/build/keystores
+    with_fileglob:
+    - /opt/build/keystores/*
+  - file: path=/opt/build/keystores/mac state=directory owner=jenkins group=jenkins
+  - copy: owner=jenkins group=jenkins
+          src=/opt/build/keystores/mac/$item dest=/opt/build/keystores/mac
+    with_fileglob:
+    - /opt/build/keystores/mac/*
+  - file: path=/opt/build/keystores/nss state=directory owner=jenkins group=jenkins
+  - copy: owner=jenkins group=jenkins
+          src=/opt/build/keystores/nss/$item dest=/opt/build/keystores/nss
+    with_fileglob:
+    - /opt/build/keystores/nss/*
+  - file: path=/opt/build/keystores/nss/work state=directory owner=jenkins group=jenkins
+  - copy: owner=jenkins group=jenkins
+          src=/opt/build/keystores/nss/work/$item dest=/opt/build/keystores/nss/work
+    with_fileglob:
+    - /opt/build/keystores/nss/work/*
+
   - file: path=/opt/build/hudson state=directory owner=jenkins group=jenkins
   - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
           owner=jenkins group=jenkins
