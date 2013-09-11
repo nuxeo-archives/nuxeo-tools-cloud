@@ -46,9 +46,6 @@
   - name: Check whether this is ubuntu or debian
     shell: lsb_release -is
     register: vendor
-  - name: Upgrade/install firefox on Ubuntu
-    apt: pkg=firefox state=latest
-    when: vendor.stdout == "Ubuntu"
   - name: Upgrade/install iceweasel on Debian
     apt: pkg=iceweasel state=latest
     when: vendor.stdout == "Debian"
@@ -111,33 +108,6 @@
 
   - name: Tooling
     file: path=/opt/build state=directory owner=root group=root
-  # local rsync not acceptable because of the passphrase-less SSH key requirement
-  # - local_action: shell echo rsync -az --delete /opt/build/keystores
-  #                -e 'ssh -o stricthostkeychecking=no
-  #                        -o userknownhostsfile=/dev/null
-  #                        -o batchmode=yes
-  #                        -o passwordauthentication=no'
-  #                jenkins@${inventory_hostname}:/opt/build/keystores
-  - file: path=/opt/build/keystores state=directory owner=jenkins group=jenkins
-  - copy: owner=jenkins group=jenkins
-          src=/opt/build/keystores/$item dest=/opt/build/keystores
-    with_fileglob:
-    - /opt/build/keystores/*
-  - file: path=/opt/build/keystores/mac state=directory owner=jenkins group=jenkins
-  - copy: owner=jenkins group=jenkins
-          src=/opt/build/keystores/mac/$item dest=/opt/build/keystores/mac
-    with_fileglob:
-    - /opt/build/keystores/mac/*
-  - file: path=/opt/build/keystores/nss state=directory owner=jenkins group=jenkins
-  - copy: owner=jenkins group=jenkins
-          src=/opt/build/keystores/nss/$item dest=/opt/build/keystores/nss
-    with_fileglob:
-    - /opt/build/keystores/nss/*
-  - file: path=/opt/build/keystores/nss/work state=directory owner=jenkins group=jenkins
-  - copy: owner=jenkins group=jenkins
-          src=/opt/build/keystores/nss/work/$item dest=/opt/build/keystores/nss/work
-    with_fileglob:
-    - /opt/build/keystores/nss/work/*
 
   - file: path=/opt/build/hudson state=directory owner=jenkins group=jenkins
   - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
@@ -145,6 +115,16 @@
   - file: path=/opt/build/tools state=directory owner=jenkins group=jenkins
   - copy: src=templates/use_mnt.sh dest=~jenkins/use_mnt.sh
           mode=755 owner=jenkins group=jenkins
+
+  # Firefox
+  - name: Check if Firefox 22 is installed
+    shell: "[ -d /opt/build/tools/firefox-22 ] && echo 'Found' || echo ''"
+    register: ff22_installed
+  # Can't use APT which pulls FF 23
+  # - name: Upgrade/install firefox on Ubuntu
+  #   apt: pkg=firefox state=latest
+  - include: tasks/firefox.yml
+    when: vendor.stdout == "Ubuntu" and not ff22_installed.stdout
 
   - name: Git config
     # should be backup=yes but create=true option is missing on ini_file
@@ -195,3 +175,14 @@
   - lineinfile: dest=/etc/hosts create=true backup=true state=present
                 regexp='176.57.246.12' line='176.57.246.12 maven.in.nuxeo.com'
 
+- hosts: all
+  gather_facts: no
+  user: jenkins
+  sudo: no
+  tasks:
+  - local_action: shell rsync -az --delete /opt/build/keystores
+                 -e 'ssh -o stricthostkeychecking=no
+                         -o userknownhostsfile=/dev/null
+                         -o batchmode=yes
+                         -o passwordauthentication=no'
+                 jenkins@${inventory_hostname}:/opt/build/keystores
