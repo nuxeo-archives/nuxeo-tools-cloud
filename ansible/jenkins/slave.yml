@@ -9,7 +9,7 @@
     authorized_key: user=ubuntu key="{{item}}"
     with_file:
     - templates/Jenkins_aws_system.pem.pub
-  - authorized_key: user=ubuntu key="{{item}}"
+  - authorized_key: user=ubuntu key='$FILE(/opt/build/hudson/authorized_keys/$item)'
     with_fileglob:
     - /opt/build/hudson/authorized_keys/id_*.pub
 
@@ -22,7 +22,7 @@
     with_file:
     - templates/jenkins_id_rsa.pub
     - templates/Jenkins_aws_system.pem.pub
-  - authorized_key: user=jenkins key="{{ item }}"
+  - authorized_key: user=jenkins key='$FILE(/opt/build/hudson/authorized_keys/$item)'
     with_fileglob:
     - /opt/build/hudson/authorized_keys/id_*.pub
   - copy: src=templates/91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
