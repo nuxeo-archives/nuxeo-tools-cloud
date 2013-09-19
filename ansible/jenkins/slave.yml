@@ -135,26 +135,9 @@
   - ini_file: dest=~jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
               section=user option=email value="jenkins@nuxeo.com"
 
-  - name: Maven 2.x
-    uri: creates=/opt/build/tools/maven2
-         url=http://www.us.apache.org/dist/maven/maven-2/2.2.1/binaries/apache-maven-2.2.1-bin.tar.gz
-         dest=/tmp/apache-maven-2.2.1-bin.tar.gz
-  - command: creates=/opt/build/tools/maven2 chdir=/opt/build/tools
-             tar zxvf /tmp/apache-maven-2.2.1-bin.tar.gz
-  - file: src=/opt/build/tools/apache-maven-2.2.1 path=/opt/build/tools/maven2 state=link
-  - shell: update-alternatives --install /usr/bin/mvn mvn /opt/build/tools/maven2/bin/mvn 1
-  - file: path=/tmp/apache-maven-2.2.1-bin.tar.gz state=absent
-
-  - name: Maven 3.x
-    uri: creates=/opt/build/tools/maven3
-         url=http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz
-         dest=/tmp/apache-maven-3.0.5-bin.tar.gz
-  - command: creates=/opt/build/tools/maven3 chdir=/opt/build/tools
-             tar zxvf /tmp/apache-maven-3.0.5-bin.tar.gz
-  - file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven3 state=link
-  - shell: update-alternatives --install /usr/bin/mvn mvn /opt/build/tools/maven3/bin/mvn 2
-  - file: path=/tmp/apache-maven-3.0.5-bin.tar.gz state=absent
-
+  # Maven
+  - include: tasks/maven.yml
+  
   - name: Gradle 1.x
     uri: creates=/opt/build/tools/gradle
          url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
