@@ -120,7 +120,7 @@
 
   # Firefox
   - name: Check if Firefox 22 is installed
-    shell: "[ -d /opt/build/tools/firefox-22 ] && echo 'Found' || echo ''"
+    shell: "firefox --version |grep 22.0"
     register: ff22_installed
   # Can't use APT which pulls FF 23
   # - name: Upgrade/install firefox on Ubuntu
