@@ -42,6 +42,8 @@
           owner=jenkins group=jenkins backup=no
   - copy: src=/opt/build/hudson/.netrc dest=~jenkins/.netrc
           owner=jenkins group=jenkins mode=600 backup=no
+  - copy: src=/opt/build/hudson/.s3cfg dest=~jenkins/.s3cfg
+          owner=jenkins group=jenkins mode=600 backup=no
 
   - name: Upgrade/install current packages
     shell: apt-get update && apt-get -q -y upgrade
