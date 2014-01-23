@@ -1,13 +1,13 @@
 ---
-- name: Firefox 22
-  uri: creates=/opt/build/tools/firefox-22
-       url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/22.0/linux-x86_64/en-US/firefox-22.0.tar.bz2
-       dest=/tmp/firefox-22.0.tar.bz2
-- command: creates=/opt/build/tools/firefox-22 chdir=/opt/build/tools
-           tar jxvf /tmp/firefox-22.0.tar.bz2
-- command: creates=/opt/build/tools/firefox-22
-           mv /opt/build/tools/firefox /opt/build/tools/firefox-22
+- name: Firefox 26
+  uri: creates=/opt/build/tools/firefox-26
+       url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/22.0/linux-x86_64/en-US/firefox-26.0.tar.bz2
+       dest=/tmp/firefox-26.0.tar.bz2
+- command: creates=/opt/build/tools/firefox-26 chdir=/opt/build/tools
+           tar jxvf /tmp/firefox-26.0.tar.bz2
+- command: creates=/opt/build/tools/firefox-26
+           mv /opt/build/tools/firefox /opt/build/tools/firefox-26
 - command: creates=/usr/bin/firefox-backup
            mv /usr/bin/firefox /usr/bin/firefox-backup
-- file: src=/opt/build/tools/firefox-22/firefox dest=/usr/bin/firefox state=link mode=755
-- file: path=/tmp/firefox-22.0.tar.bz2 state=absent
+- file: src=/opt/build/tools/firefox-26/firefox dest=/usr/bin/firefox state=link mode=755
+- file: path=/tmp/firefox-26.0.tar.bz2 state=absent
