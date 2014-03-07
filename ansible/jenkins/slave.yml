@@ -121,14 +121,14 @@
           mode=755 owner=jenkins group=jenkins
 
   # Firefox
+  # Can't use APT which pulls unfixed FF version
   - name: Check if Firefox 26 is installed
-    shell: "firefox --version |grep 26.0"
+    shell: "firefox --version"
     register: ff26_installed
-  # Can't use APT which pulls FF 23
-  # - name: Upgrade/install firefox on Ubuntu
-  #   apt: pkg=firefox state=latest
+    ignore_errors: True
   - include: tasks/firefox.yml
-    when: vendor.stdout == "Ubuntu" and not ff26_installed.stdout
+    when: vendor.stdout == "Ubuntu" and
+          (ff26_installed.rc != 0 or ff26_installed.stdout != 'Mozilla Firefox 26.0.0')
 
   - name: Git config
     # should be backup=yes but create=true option is missing on ini_file
