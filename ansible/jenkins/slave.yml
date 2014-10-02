@@ -172,4 +172,4 @@
                          -o userknownhostsfile=/dev/null
                          -o batchmode=yes
                          -o passwordauthentication=no'
-                 jenkins@${inventory_hostname}:/opt/build/keystores
+                 jenkins@{{inventory_hostname}}:/opt/build/keystores

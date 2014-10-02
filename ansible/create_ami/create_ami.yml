@@ -9,14 +9,14 @@
   - name: Install dependencies
     local_action: apt pkg=ec2-api-tools state=latest
   - name: Launch instance
-    local_action: ec2 image=${AMIs.$region} keypair=$keypair region=$region group=default instance_type=c1.medium wait=yes instance_tags='{"Name":"ansible_temp", "ansible":"create_ami"}' count=1
+    local_action: ec2 image={{AMIs.$region}} keypair=$keypair region=$region group=default instance_type=c1.medium wait=yes instance_tags='{"Name":"ansible_temp", "ansible":"create_ami"}' count=1
     register: ec2
   - name: Register instance as ansible host
-    local_action: add_host hostname=${ec2.instances[0].public_ip} groupname=ansible_create_ami
+    local_action: add_host hostname={{ec2.instances[0].public_ip}} groupname=ansible_create_ami
   - name: Wait instance to come up
-    local_action: wait_for host=${ec2.instances[0].public_ip} port=22 delay=60 timeout=320 state=started
+    local_action: wait_for host={{ec2.instances[0].public_ip}} port=22 delay=60 timeout=320 state=started
   - name: Add host key to known_hosts
-    local_action: shell ssh-keyscan -t rsa -H ${ec2.instances[0].public_ip} 2>/dev/null >> ~/.ssh/known_hosts
+    local_action: shell ssh-keyscan -t rsa -H {{ec2.instances[0].public_ip}} 2>/dev/null >> ~/.ssh/known_hosts
 
 - name: Provision base instance
   hosts: ansible_create_ami
@@ -34,20 +34,20 @@
   - vars/ec2_settings
   tasks:
   - name: Remove host key from known_hosts
-    local_action: shell ssh-keygen -R ${ec2.instances[0].public_ip}
+    local_action: shell ssh-keygen -R {{ec2.instances[0].public_ip}}
   - name: Get a timestamp
     local_action: shell date +"%Y%m%d%H%M%S"
     register: timestamp
   - name: Create image
-    local_action: shell ec2-create-image --region=$region -n "cluster_ami_${timestamp.stdout}" ${ec2.instances[0].id} | grep IMAGE | awk '{print $2}'
+    local_action: shell ec2-create-image --region=$region -n "cluster_ami_{{timestamp.stdout}}" {{ec2.instances[0].id}} | grep IMAGE | awk '{print $2}'
     register: image
   - name: Wait for full image creation
-    local_action: shell while [ "$(ec2-describe-images --region=$region ${image.stdout} | grep IMAGE | awk '{print $5}')" != "available" ]; do sleep 5; done
+    local_action: shell while [ "$(ec2-describe-images --region=$region {{image.stdout}} | grep IMAGE | awk '{print $5}')" != "available" ]; do sleep 5; done
   - name: Get base snapshot ID
-    local_action: shell ec2-describe-images --region=$region ${image.stdout} | grep '/dev/sda1' | awk '{print $4}'
+    local_action: shell ec2-describe-images --region=$region {{image.stdout}} | grep '/dev/sda1' | awk '{print $4}'
     register: snapshot
   - name: Tag base snapshot
-    local_action: shell ec2-create-tags --region=eu-west-1 ${snapshot.stdout} --tag Name=cluster_ami_${timestamp.stdout}
+    local_action: shell ec2-create-tags --region=eu-west-1 {{snapshot.stdout}} --tag Name=cluster_ami_{{timestamp.stdout}}
   - name: Terminate base instance
-    local_action: ec2 instance_ids=${ec2.instance_ids} region=$region state=absent
+    local_action: ec2 instance_ids={{ec2.instance_ids}} region=$region state=absent
 
