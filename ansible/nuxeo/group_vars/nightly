@@ -1,5 +1,6 @@
 ---
 nuxeo_version: 5.9.6-SNAPSHOT
+nuxeo_distribution: "../../../nuxeo-distribution/nuxeo-distribution-tomcat/target/nuxeo-distribution-tomcat-{{nuxeo_version}}-nuxeo-cap.zip"
 update_snapshots: true
 reset_data: true
 dbname: nuxeo
@@ -11,3 +12,5 @@ nuxeo_packages:
 - nuxeo-drive
 - nuxeo-template-rendering
 - nuxeo-web-mobile-dm
+nuxeo_conf:
+  nuxeo.bind.address: 127.0.0.1
