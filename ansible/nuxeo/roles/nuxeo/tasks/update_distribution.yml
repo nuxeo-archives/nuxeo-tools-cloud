@@ -11,6 +11,7 @@
   register: distrib_dir
 - name: Register date
   local_action: shell date +"%Y%m%d-%H%M%S"
+  sudo: no
   register: date
 - name: Move distribution to final location
   shell: mv {{nuxeo_base}}/ansible_tmp/{{distrib_dir.stdout}} {{nuxeo_base}}/nuxeo-{{nuxeo_version}}-{{date.stdout}}
