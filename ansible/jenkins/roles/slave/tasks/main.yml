@@ -1,0 +1,170 @@
+---
+- name: Configure user 'ubuntu'
+  authorized_key: user=ubuntu key="{{item}}"
+  with_file:
+  - Jenkins_aws_system.pem.pub
+- authorized_key: user=ubuntu key='{{lookup("file", item)}}'
+  with_fileglob:
+  - /opt/build/hudson/authorized_keys/id_*.pub
+
+- name: Configure user 'jenkins'
+  file: path=/opt/jenkins state=directory
+- user: name=jenkins home=/opt/jenkins state=present shell=/bin/bash
+- file: path=~jenkins/ state=directory owner=jenkins group=jenkins
+- file: path=~jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
+- authorized_key: user=jenkins key="{{item}}"
+  with_file:
+  - jenkins_id_rsa.pub
+  - Jenkins_aws_system.pem.pub
+- authorized_key: user=jenkins key='{{lookup("file", item)}}'
+  with_fileglob:
+  - /opt/build/hudson/authorized_keys/id_*.pub
+- copy: src=91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
+        mode=440 owner=root group=root
+- copy: src=~/.ssh/jenkins_id_rsa dest=~jenkins/.ssh/id_rsa
+        owner=jenkins group=jenkins mode=600 backup=no
+- copy: src=jenkins_id_rsa.pub dest=~jenkins/.ssh/id_rsa.pub
+        owner=jenkins group=jenkins mode=600 backup=no
+- copy: src=jenkins_ssh_config dest=~jenkins/.ssh/config
+        owner=jenkins group=jenkins mode=600 backup=no
+- file: path=~jenkins/.m2 state=directory owner=jenkins group=jenkins
+- copy: src=/opt/build/hudson/m2remote/settings.xml dest=~jenkins/.m2/settings.xml
+        owner=jenkins group=jenkins
+- copy: src=.profile dest=~jenkins/.profile
+        owner=jenkins group=jenkins backup=no
+- copy: src=.bashrc dest=~jenkins/.bashrc
+        owner=jenkins group=jenkins backup=no
+- copy: src=/opt/build/hudson/.netrc dest=~jenkins/.netrc
+        owner=jenkins group=jenkins mode=600 backup=no
+- copy: src=/opt/build/hudson/.s3cfg dest=~jenkins/.s3cfg
+        owner=jenkins group=jenkins mode=600 backup=no
+
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=7200
+- name: Upgrade/install ansible dependencies
+  apt: state=latest pkg={{item}}
+  with_items:
+  - aptitude
+  - python-httplib2
+- name: Update existing packages
+  apt: upgrade=full
+- name: Upgrade/install build dependencies
+  apt: state=latest pkg={{item}}
+  with_items:
+  - python-httplib2
+  - openjdk-6-jdk
+  - openjdk-7-jdk
+  - git
+  - mercurial
+  - subversion
+  - chromium-browser
+  - ant
+  - ant-contrib
+  - imagemagick
+  # conflicts with custom build with x264 support
+  # - ffmpeg
+  - ffmpeg2theora
+  - lynx
+  - sysstat
+  - logtail
+  - gawk
+  - vim
+  - wget
+  - curl
+  - unzip
+  - moreutils
+  - ufraw
+  - poppler-utils
+  - libreoffice
+  - libwpd-tools
+  - xvfb
+  - x11vnc
+  - fluxbox
+  - linkchecker
+  # Amazon S3
+  - s3cmd
+  # Funkload requirements
+  - python-dev
+  - python-setuptools
+  - python-webunit
+  - python-docutils
+  - gnuplot
+  - python-reportlab
+  - python-pypdf
+- apt: state=latest pkg=tcpwatch-httpproxy install_recommends=no
+- easy_install: name=pip
+- shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
+- alternatives: name=editor path=/usr/bin/vim.basic
+- file: src=/usr/lib/jvm/java-1.7.0-openjdk-amd64 path=/usr/lib/jvm/java-7-openjdk state=link
+# Xvfb, x11vnc, fluxbox
+- copy: src=xvfb dest=/etc/init.d/xvfb
+        mode=755 owner=root group=root
+- service: name=xvfb enabled=yes
+# FFmpeg build with x264, vpx and AAC support if needed
+- copy: src=ffmpeg-compile.sh dest=/tmp/ffmpeg-compile.sh
+        mode=755 owner=root group=root
+- shell: /tmp/ffmpeg-compile.sh
+  register: compile_ffmpeg
+  changed_when: compile_ffmpeg.rc != 0
+- file: path=/tmp/ffmpeg-nuxeo state=absent
+
+- name: Tooling
+  file: path=/opt/build state=directory owner=root group=root
+
+- file: path=/opt/build/hudson state=directory owner=jenkins group=jenkins
+- copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
+        owner=jenkins group=jenkins
+- file: path=/opt/build/tools state=directory owner=jenkins group=jenkins
+- copy: src=use_mnt.sh dest=~jenkins/use_mnt.sh
+        mode=755 owner=jenkins group=jenkins
+
+# Firefox
+# Can't use APT which pulls unfixed FF version
+- name: Check if Firefox 26 is installed
+  shell: "firefox --version"
+  register: ff26_installed
+  ignore_errors: True
+  changed_when: false
+- include: firefox.yml
+  when: (ff26_installed.rc != 0 or ff26_installed.stdout != 'Mozilla Firefox 26.0.0')
+
+- name: Git config
+  # should be backup=yes but create=true option is missing on ini_file
+  ini_file: dest=~jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
+            section=user option=name value="Jenkins Nuxeo"
+- ini_file: dest=~jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
+            section=user option=email value="jenkins@nuxeo.com"
+
+# Maven
+- include: maven.yml
+
+- name: Gradle 1.x
+  uri: creates=/opt/build/tools/gradle
+       url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
+       dest=/tmp/gradle-1.6-bin.zip
+- command: creates=/opt/build/tools/gradle
+           unzip /tmp/gradle-1.6-bin.zip -d /opt/build/tools/
+- file: src=/opt/build/tools/gradle-1.6 path=/opt/build/tools/gradle state=link
+- alternatives: name=gradle link=/usr/bin/gradle path=/opt/build/tools/gradle/bin/gradle
+- file: path=/tmp/gradle-1.6-bin.zip state=absent
+
+- name: Spot instance Jenkins callback script
+# use https://qa.nuxeo.org/jenkins/plugin/ec2/AMI-Scripts/ubuntu-ami-setup.sh once ec2 plugin upgraded
+  get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py 
+           dest=/usr/bin/userdata mode=0750
+- lineinfile: dest=/etc/rc.local backup=true state=present
+              regexp='^python /usr/bin/userdata$' line='python /usr/bin/userdata' insertbefore='^exit 0'
+- lineinfile: dest=/etc/rc.local backup=true state=present
+              regexp='^.*use_mnt.sh.*$' line='/opt/jenkins/use_mnt.sh || true' insertbefore='^python /usr/bin/userdata'
+- lineinfile: dest=/etc/hosts create=true state=present
+              regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
+  when: "'docker' not in group_names"
+- lineinfile: dest=/etc/hosts create=true state=present
+              regexp='176.57.246.12' line='176.57.246.12 maven.in.nuxeo.com'
+  when: "'docker' not in group_names"
+- synchronize: src=/opt/build/keystores dest=/opt/build/ delete=yes recursive=yes
+  sudo_user: jenkins
+
+# Kerberos
+- name: Kerberos krb5.conf
+  copy: src=/opt/build/keystores/keytabs/krb5.conf dest=/etc/krb5.conf

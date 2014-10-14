@@ -1,0 +1,14 @@
+---
+- include: tasks/docker_start.yml
+  vars:
+    dgroups:
+    - docker
+    - slaves
+    count: 1
+
+- hosts: slaves
+  gather_facts: yes
+  sudo: yes
+  roles:
+  - slave
+
