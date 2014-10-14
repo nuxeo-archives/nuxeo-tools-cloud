@@ -1,0 +1,21 @@
+---
+- name: Download nodejs
+  get_url: url=http://nodejs.org/dist/v{{node_version}}/node-v{{node_version}}.tar.gz dest=/tmp/node.tar.gz
+- name: Create /usr/local/src
+  file: path=/usr/local/src state=directory
+- name: Uncompress nodejs
+  shell: tar -C /usr/local/src -xzf /tmp/node.tar.gz
+- name: Configure nodejs
+  shell: ./configure
+    chdir=/usr/local/src/node-v{{node_version}}
+- name: Build nodejs
+  shell: make
+    chdir=/usr/local/src/node-v{{node_version}}
+- name: Install nodejs
+  shell: make install
+    chdir=/usr/local/src/node-v{{node_version}}
+- name: Cleanup nodejs download
+  file: path=/tmp/node.tar.gz state=absent
+- name: Cleanup nodejs build directory
+  file: path=/usr/local/src/node-v{{node_version}} state=absent
+
