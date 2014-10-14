@@ -139,7 +139,7 @@
 
   # Maven
   - include: tasks/maven.yml
-  
+
   - name: Gradle 1.x
     uri: creates=/opt/build/tools/gradle
          url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
@@ -152,10 +152,12 @@
 
   - name: Spot instance Jenkins callback script
   # use https://qa.nuxeo.org/jenkins/plugin/ec2/AMI-Scripts/ubuntu-ami-setup.sh once ec2 plugin upgraded
-    get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py 
+    get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py
              dest=/usr/bin/userdata mode=0750
   - lineinfile: dest=/etc/rc.local backup=true state=present
                 regexp='^python /usr/bin/userdata$' line='python /usr/bin/userdata' insertbefore='^exit 0'
+  - lineinfile: dest=/etc/rc.local backup=true state=present
+                regexp='^.*use_mnt.sh.*$' line='/opt/jenkins/use_mnt.sh || true' insertbefore='^python /usr/bin/userdata'
     #notify: reload rc.local
   - lineinfile: dest=/etc/hosts create=true backup=true state=present
                 regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
