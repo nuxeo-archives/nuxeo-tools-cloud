@@ -9,25 +9,33 @@ Technical details:
 
 ## Requirements
 
+ - ansible 1.7.2 or later
  - existing nexus user and group with ID 1003
  - existing hudson user and group with ID 1005
  - current user must have SSH access to host target as ubuntu
  - current user must be sudoer
  - current user must be member of the hudson group
  - gargantua:/volume1/Build mounted to /opt/build
+
+For docker tests:
+
+ - current user must be in docker group (to invoke docker commands)
+ - docker-py must be installed (pip install docker-py)
  
 
 ## Generate/update image
 
-ansible-playbook -i production slave.yml [-v]
+Prod:
+ansible-playbook -i hosts-production slave.yml [-v]
 
 ## Testing
 
-ansible-playbook -i stage slave.yml -v -c local [--ask-sudo-pass]
-
-ansible-playbook -i stage slave.yml [-K]
-
+ansible-playbook -i hosts-stage slave.yml -v -c local [--ask-sudo-pass]
+ansible-playbook -i hosts-stage slave.yml [-K]
 ansible-playbook playbook.yml --list-hosts
+
+Docker test:
+ansible-playbook -i hosts-docker, docker.yml -v
 
 ## Complete procedure with Jenkins
 
