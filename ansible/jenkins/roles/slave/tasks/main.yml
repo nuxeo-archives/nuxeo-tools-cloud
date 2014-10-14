@@ -168,3 +168,18 @@
 # Kerberos
 - name: Kerberos krb5.conf
   copy: src=/opt/build/keystores/keytabs/krb5.conf dest=/etc/krb5.conf
+
+# NodeJS
+- name: Check for nodejs
+  stat: path=/usr/local/bin/node
+  register: node_path
+- include: nodejs.yml
+  when: node_path.stat.exists == false
+- name: Install node dependencies
+  npm: name={{item}} global=yes state=latest
+  with_items:
+  - yo
+  - grunt-cli
+  - gulp
+  - bower
+
