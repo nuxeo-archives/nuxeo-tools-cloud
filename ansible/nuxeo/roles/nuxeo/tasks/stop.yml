@@ -2,4 +2,7 @@
 - name: Stop nuxeo
   service: name={{nuxeo_service_name}} state=stopped
   failed_when: false
+- name: Stop LibreOffice
+  shell: killall soffice.bin || true
+  changed_when: false
 
