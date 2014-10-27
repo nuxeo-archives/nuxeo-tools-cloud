@@ -114,6 +114,8 @@
 - file: path=/opt/build/hudson state=directory owner=jenkins group=jenkins
 - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
         owner=jenkins group=jenkins
+- copy: src=/opt/build/hudson/instance.clid dest=/opt/build/hudson/instance.clid
+        owner=jenkins group=jenkins
 - file: path=/opt/build/tools state=directory owner=jenkins group=jenkins
 - copy: src=use_mnt.sh dest=~jenkins/use_mnt.sh
         mode=755 owner=jenkins group=jenkins
