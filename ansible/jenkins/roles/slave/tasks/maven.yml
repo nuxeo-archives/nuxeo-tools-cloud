@@ -15,6 +15,7 @@
 - command: creates=/opt/build/tools/maven3.0 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.0.5-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven3.0 state=link
+- file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven-3.0 state=link
 - file: path=/tmp/apache-maven-3.0.5-bin.tar.gz state=absent
 
 - name: Maven 3.1.x
@@ -24,6 +25,7 @@
 - command: creates=/opt/build/tools/maven3.1 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.1.1-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.1.1 path=/opt/build/tools/maven3.1 state=link
+- file: src=/opt/build/tools/apache-maven-3.1.1 path=/opt/build/tools/maven-3.1 state=link
 - file: path=/tmp/apache-maven-3.1.1-bin.tar.gz state=absent
 
 - name: Maven 3.2.x
@@ -33,7 +35,9 @@
 - command: creates=/opt/build/tools/maven3.2 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.2.3-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.2.3 path=/opt/build/tools/maven3.2 state=link
+- file: src=/opt/build/tools/apache-maven-3.2.3 path=/opt/build/tools/maven-3.2 state=link
 - file: src=/opt/build/tools/maven3.2 path=/opt/build/tools/maven3 state=link
 - file: path=/tmp/apache-maven-3.2.3-bin.tar.gz state=absent
 
 - alternatives: name=mvn link=/usr/bin/mvn path=/opt/build/tools/maven3.2/bin/mvn
+
