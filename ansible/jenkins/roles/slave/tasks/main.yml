@@ -83,6 +83,7 @@
   - x11vnc
   - fluxbox
   - linkchecker
+  - tree
   # Amazon S3
   - s3cmd
   # Funkload requirements
