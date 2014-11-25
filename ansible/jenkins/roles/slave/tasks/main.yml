@@ -191,6 +191,7 @@
   - bower
   tags: nodejs
 
-# Java 6
+# Java versions
 - include: java6.yml
+- include: java8.yml
 
