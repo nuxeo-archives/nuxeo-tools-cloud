@@ -1,0 +1,15 @@
+---
+- name: Download JDK 6
+  uri: creates=/usr/lib/jvm/jdk1.6.0_33
+       url="http://javadl.sun.com/webapps/download/AutoDL?BundleId=63975"
+       dest=/tmp/jdk-6-linux-x64.bin
+- name: Install JDK 6
+  command: creates=/usr/lib/jvm/jdk1.6.0_33 chdir=/usr/lib/jvm
+           sh /tmp/jdk-6-linux-x64.bin -noregister
+  register: extracted_java6
+- name: Remove JDK 6 archive
+  file: path=/tmp/jdk-6-linux-x64.bin state=absent
+- name: Create JDK 6 symlink
+  file: src=/usr/lib/jvm/jdk1.6.0_33 path=/usr/lib/jvm/java-6-sun state=link
+  when: extracted_java6.changed
+

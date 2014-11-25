@@ -14,10 +14,13 @@
     shell: cat {{ lookup('env','HOME') }}/.ssh/id_rsa.pub | docker exec -i {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} sh -c 'cat > /home/ubuntu/.ssh/authorized_keys'
     with_sequence: start=0 end={{count|int|default(1) - 1}}
   - name: Set mode for public key
-    shell: docker exec -i {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} sh -c 'chmod 0600 /home/ubuntu/.ssh/authorized_keys'
+    shell: docker exec {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} chmod 0600 /home/ubuntu/.ssh/authorized_keys
     with_sequence: start=0 end={{count|int|default(1) - 1}}
   - name: Set owner for public key
-    shell: docker exec -i {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} sh -c 'chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys'
+    shell: docker exec {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
+    with_sequence: start=0 end={{count|int|default(1) - 1}}
+  - name: Docker "cat cleanup"
+    shell: docker exec {{docker_containers.results[item|int].ansible_facts.docker_containers[0]["Id"]}} killall cat
     with_sequence: start=0 end={{count|int|default(1) - 1}}
   - name: Display IP address and port mappings for containers
     debug: msg={{docker_containers.results[item|int].ansible_facts.docker_containers[0]["NetworkSettings"]["Ports"]["22/tcp"][0]["HostIp"]}}:{{docker_containers.results[item|int].ansible_facts.docker_containers[0]["NetworkSettings"]["Ports"]["22/tcp"][0]["HostPort"]}}
