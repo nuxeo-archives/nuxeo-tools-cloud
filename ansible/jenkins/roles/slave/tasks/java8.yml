@@ -10,7 +10,7 @@
     chdir: /usr/lib/jvm
   register: extracted_java8
 - name: Remove JDK 8 archive
-  file: path=/tmp/jdk-8-linux-x64.bin state=absent
+  file: path=/tmp/jdk-8-linux-x64.tgz state=absent
 - name: Create JDK 8 symlink
   file: src=/usr/lib/jvm/jdk1.8.0_25 path=/usr/lib/jvm/java-8 state=link
   when: extracted_java8.changed
