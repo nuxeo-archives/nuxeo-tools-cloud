@@ -1,0 +1,15 @@
+---
+- name: Get the Google Linux package signing key
+  apt_key: url=https://dl-ssl.google.com/linux/linux_signing_key.pub state=present
+- name: Set up the location of the stable repository
+  get_url: url=https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list dest=/etc/apt/sources.list.d/dart_stable.list
+- name: Update apt cache
+  apt: update_cache=yes cache_valid_time=7200
+- name: Install Dart
+  apt: pkg=dart=1.8.0-1 state=present
+- name: Update alternatives
+  alternatives: name={{item}} link=/usr/bin/{{item}} path=/usr/lib/dart/bin/{{item}}
+  with_items:
+  - dart
+  - pub
+  - dart2js
