@@ -4,7 +4,7 @@
 - name: Set up the location of the stable repository
   get_url: url=https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list dest=/etc/apt/sources.list.d/dart_stable.list
 - name: Update apt cache
-  apt: update_cache=yes cache_valid_time=7200
+  apt: update_cache=yes
 - name: Install Dart
   apt: pkg=dart=1.8.0-1 state=present
 - name: Update alternatives
