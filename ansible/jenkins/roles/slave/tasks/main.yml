@@ -48,6 +48,7 @@
   with_items:
   - aptitude
   - python-httplib2
+  - apt-transport-https
 - name: Update existing packages
   apt: upgrade=full
 - name: Upgrade/install build dependencies
