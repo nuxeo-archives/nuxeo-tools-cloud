@@ -3,9 +3,7 @@
   authorized_key: user=ubuntu key="{{item}}"
   with_file:
   - Jenkins_aws_system.pem.pub
-- authorized_key: user=ubuntu key='{{lookup("file", item)}}'
-  with_fileglob:
-  - /opt/build/hudson/authorized_keys/id_*.pub
+- authorized_key: user=ubuntu key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
 
 - name: Configure user 'jenkins'
   file: path=/opt/jenkins state=directory
@@ -16,9 +14,7 @@
   with_file:
   - jenkins_id_rsa.pub
   - Jenkins_aws_system.pem.pub
-- authorized_key: user=jenkins key='{{lookup("file", item)}}'
-  with_fileglob:
-  - /opt/build/hudson/authorized_keys/id_*.pub
+- authorized_key: user=jenkins key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
 - copy: src=91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
         mode=440 owner=root group=root
 - copy: src=~/.ssh/jenkins_id_rsa dest=/opt/jenkins/.ssh/id_rsa
