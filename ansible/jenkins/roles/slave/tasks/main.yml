@@ -44,7 +44,7 @@
 - name: Update apt cache
   apt: update_cache=yes cache_valid_time=7200
 - name: Upgrade/install ansible dependencies
-  apt: state=latest pkg={{item}}
+  apt: state=latest name={{item}}
   with_items:
   - aptitude
   - python-httplib2
@@ -52,7 +52,7 @@
 - name: Update existing packages
   apt: upgrade=full
 - name: Upgrade/install build dependencies
-  apt: state=latest pkg={{item}}
+  apt: state=latest name={{item}}
   with_items:
   - python-httplib2
   - openjdk-6-jdk
@@ -85,6 +85,7 @@
   - fluxbox
   - linkchecker
   - tree
+  - libimage-exiftool-perl
   # Amazon S3
   - s3cmd
   # Funkload requirements
@@ -95,7 +96,7 @@
   - gnuplot
   - python-reportlab
   - python-pypdf
-- apt: state=latest pkg=tcpwatch-httpproxy install_recommends=no
+- apt: state=latest name=tcpwatch-httpproxy install_recommends=no
 - easy_install: name=pip
 - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
 - alternatives: name=editor path=/usr/bin/vim.basic
