@@ -1,5 +1,5 @@
 ---
-nuxeo_version: 7.1-SNAPSHOT
+nuxeo_version: 7.2-SNAPSHOT
 nuxeo_distribution: "../../../nuxeo-distribution/nuxeo-distribution-tomcat/target/nuxeo-distribution-tomcat-{{nuxeo_version}}-nuxeo-cap.zip"
 update_snapshots: true
 reset_data: true
