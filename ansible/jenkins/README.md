@@ -4,8 +4,9 @@ Generate an Ubuntu image for use by Jenkins as a slave.
 
 Technical details:
 
- - based on ami-ce7b6fba (from http://alestic.com/).
- - c3.xlarge
+ - based on ami-89fa71fe (from http://alestic.com/ or http://cloud-images.ubuntu.com/locator/ec2/)  
+(trusty 14.04 LTS amd64 ebs-ssd 20150209.1 ami-89fa71fe aki-52a34525)
+ - m1.small
 
 ## Requirements
 
