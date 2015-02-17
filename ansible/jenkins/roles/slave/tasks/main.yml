@@ -144,6 +144,7 @@
 
 # Maven
 - include: maven.yml
+  tags: maven
 
 - name: Gradle 1.x
   uri: creates=/opt/build/tools/gradle
