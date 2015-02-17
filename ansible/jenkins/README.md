@@ -2,12 +2,6 @@
 
 Generate an Ubuntu image for use by Jenkins as a slave.
 
-Technical details:
-
- - based on ami-89fa71fe (from http://alestic.com/ or http://cloud-images.ubuntu.com/locator/ec2/)  
-(trusty 14.04 LTS amd64 ebs-ssd 20150209.1 ami-89fa71fe aki-52a34525)
- - m1.small
-
 ## Requirements
 
  - ansible 1.8.2 or later + https://github.com/stansonhealth/ansible-modules-core/commit/250acf0e76d9858595d3f35ea3bfa8e06f6c958e
@@ -94,13 +88,18 @@ Log on https://console.aws.amazon.com/ec2/home?region=eu-west-1#s=Instances
 
 ### Jenkins slave template generation
 
+Technical details:
+
+ - based on ami-89fa71fe (from http://alestic.com/ or http://cloud-images.ubuntu.com/locator/ec2/)
+(trusty 14.04 LTS amd64 ebs-ssd 20150209.1 ami-89fa71fe aki-52a34525)
+
 Launch an instance:
 
- - from community AMI: ami-ce7b6fba
+ - from community AMI: ami-89fa71fe
  - with m1.small type
- - set "Jenkins slave template" as name
+ - set "Jenkins slave template <DATE>" as name
  - associate the key pair
- - set default security group (it's preconfigured to fit requirements)
+ - set 'default' security group (it's preconfigured to fit requirements)
 
 Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
@@ -109,12 +108,12 @@ Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
 ### Jenkins slave AMI generation
 
-Select the "Jenkins slave template" instance on AWS interface and click "Action / Create Image (EBS AMI)".
-Set "`Jenkins_AMI_YYYYMMDD_slave`" as name.
+Select the "Jenkins slave template <DATE>" instance on AWS interface and click "Action / Create Image (EBS AMI)".
+Set "`Jenkins_AMI_<DATE>_slave`" as name.
 Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images:
 Copy the AMI ID (for instance ami-a3b1a7d7).
 
-Repeat the operation to generate an identical AMI with name: "`Jenkins_AMI_YYYYMMDD_ondemand`"
+Repeat the operation to generate an identical AMI with name: "`Jenkins_AMI_<DATE>_ondemand`"
 
 ### Jenkins configuration
 
@@ -128,3 +127,6 @@ Same for the "ondemand" label with the second AMI.
 
 You can ask for an image from https://qa.nuxeo.org/jenkins/computer/ with "Provision via EC2" button.
 
+### AWS cleanup
+
+Delete unused old AMIs. Delete unused associated "snapshot" volumes.
