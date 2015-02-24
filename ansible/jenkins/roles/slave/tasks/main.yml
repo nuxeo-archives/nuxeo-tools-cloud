@@ -135,6 +135,10 @@
 - include: firefox.yml
   when: (ff26_installed.rc != 0 or ff26_installed.stdout != 'Mozilla Firefox 26.0.0')
 
+# Google Chrome
+- include: google-chrome.yml
+  tags: chrome
+
 - name: Git config
   # should be backup=yes but create=true option is missing on ini_file
   ini_file: dest=/opt/jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
