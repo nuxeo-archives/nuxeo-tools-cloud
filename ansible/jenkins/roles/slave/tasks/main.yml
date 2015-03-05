@@ -207,3 +207,11 @@
 # Dart
 - include: dart.yml
   tags: dart
+
+# slave.jar
+- name: Install current slave.jar
+  file: path=/opt/jenkins/bin state=directory owner=jenkins group=jenkins
+- get_url: url=http://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
+           dest=/opt/jenkins/bin/slave.jar
+  sudo_user: jenkins
+
