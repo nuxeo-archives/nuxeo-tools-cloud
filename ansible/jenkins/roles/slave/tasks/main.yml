@@ -28,9 +28,9 @@
         owner=jenkins group=jenkins
 - copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
         owner=jenkins group=jenkins
-- copy: src=.profile dest=/opt/jenkins/.profile
+- copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
         owner=jenkins group=jenkins backup=no
-- copy: src=.bashrc dest=/opt/jenkins/.bashrc
+- copy: src=/opt/build/hudson/.bashrc dest=/opt/jenkins/.bashrc
         owner=jenkins group=jenkins backup=no
 - copy: src=/opt/build/hudson/.netrc dest=/opt/jenkins/.netrc
         owner=jenkins group=jenkins mode=600 backup=no
