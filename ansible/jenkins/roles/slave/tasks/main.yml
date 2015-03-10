@@ -26,7 +26,7 @@
 - file: path=/opt/jenkins/.m2 state=directory owner=jenkins group=jenkins
 - copy: src=/opt/build/hudson/m2remote/settings.xml dest=/opt/jenkins/.m2/settings.xml
         owner=jenkins group=jenkins
-- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
+- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
         owner=jenkins group=jenkins
 - copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
         owner=jenkins group=jenkins backup=no
@@ -104,7 +104,7 @@
 # Xvfb, x11vnc, fluxbox
 - copy: src=xvfb dest=/etc/init.d/xvfb
         mode=755 owner=root group=root
-- service: name=xvfb enabled=yes
+- service: name=xvfb enabled=yes state=started
 # FFmpeg build with x264, vpx and AAC support if needed
 - copy: src=ffmpeg-compile.sh dest=/tmp/ffmpeg-compile.sh
         mode=755 owner=root group=root
@@ -122,8 +122,12 @@
 - copy: src=/opt/build/hudson/instance.clid dest=/opt/build/hudson/instance.clid
         owner=jenkins group=jenkins
 - file: path=/opt/build/tools state=directory owner=jenkins group=jenkins
-- copy: src=use_mnt.sh dest=/opt/jenkins/use_mnt.sh
+- copy: src=use_mnt_ondemand.sh dest=/opt/jenkins/use_mnt.sh
         mode=755 owner=jenkins group=jenkins
+  when: "'aws_ondemand' in group_names"
+- copy: src=use_mnt_static.sh dest=/opt/jenkins/use_mnt.sh
+        mode=755 owner=jenkins group=jenkins
+  when: "'aws_static' in group_names"
 
 # Firefox
 # Can't use APT which pulls unfixed FF version
@@ -168,6 +172,9 @@
               regexp='^python /usr/bin/userdata$' line='python /usr/bin/userdata' insertbefore='^exit 0'
 - lineinfile: dest=/etc/rc.local backup=true state=present
               regexp='^.*use_mnt.sh.*$' line='/opt/jenkins/use_mnt.sh || true' insertbefore='^python /usr/bin/userdata'
+  when: "'aws' in group_names"
+- shell: ~jenkins/use_mnt.sh
+  when: "'aws_static' in group_names"
 - lineinfile: dest=/etc/hosts create=true state=present
               regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
   when: "'docker' not in group_names"

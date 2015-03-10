@@ -1,2 +1,13 @@
-[slaves]
-ec2-54-220-227-164.eu-west-1.compute.amazonaws.com
+[slaves:children]
+aws
+
+[aws:children]
+aws_ondemand
+aws_static
+
+[aws_ondemand]
+ec2-54-73-97-89.eu-west-1.compute.amazonaws.com
+
+[aws_static]
+ec2-54-155-175-82.eu-west-1.compute.amazonaws.com
+

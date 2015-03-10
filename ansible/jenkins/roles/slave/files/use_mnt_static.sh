@@ -18,7 +18,16 @@
 #   Julien Carsique
 #
 
-mkdir /mnt/repository /mnt/workspace
-chown jenkins:jenkins /mnt/repository /mnt/workspace
-ln -s /mnt/repository ~jenkins/.m2/repository
-ln -s /mnt/workspace ~jenkins/workspace
+if [ ! -d ~jenkins/.m2/repository ]; then
+    cp -a ~jenkins/.m2/repo_seed ~jenkins/.m2/repository
+fi
+chown -R jenkins:jenkins ~jenkins/.m2/repository
+
+if [ ! -d /mnt/workspace ]; then
+    mkdir /mnt/workspace
+    chown jenkins:jenkins /mnt/workspace
+fi
+if [ ! -L ~jenkins/workspace ]; then
+    ln -s /mnt/workspace ~jenkins/workspace
+fi
+
