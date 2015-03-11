@@ -9,5 +9,7 @@ aws_static
 ec2-54-73-97-89.eu-west-1.compute.amazonaws.com
 
 [aws_static]
-ec2-54-155-175-82.eu-west-1.compute.amazonaws.com
+linaws1.nuxeo.org
+linaws2.nuxeo.org
+linaws3.nuxeo.org
 
