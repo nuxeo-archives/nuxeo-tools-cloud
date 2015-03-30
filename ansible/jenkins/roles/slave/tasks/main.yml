@@ -215,9 +215,9 @@
 
 # Java versions
 - include: java6.yml
-  tags: java, java6
+  tags: java,java6
 - include: java8.yml
-  tags: java, java8
+  tags: java,java8
 
 # Dart
 - include: dart.yml
