@@ -28,10 +28,15 @@
         owner=jenkins group=jenkins
 - copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
         owner=jenkins group=jenkins
+  when: "'aws' in group_names"
+- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
+        owner=jenkins group=jenkins
+  when: "'aws' not in group_names"
 - copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
         owner=jenkins group=jenkins backup=no
 - copy: src=/opt/build/hudson/.bashrc dest=/opt/jenkins/.bashrc
         owner=jenkins group=jenkins backup=no
+  when: "'aws' in group_names"
 - copy: src=/opt/build/hudson/.netrc dest=/opt/jenkins/.netrc
         owner=jenkins group=jenkins mode=600 backup=no
 - copy: src=/opt/build/hudson/.s3cfg dest=/opt/jenkins/.s3cfg
@@ -115,7 +120,7 @@
 - file: path=/tmp/ffmpeg-nuxeo state=absent
 
 - name: Tooling
-  file: path=/opt/build state=directory owner=root group=root
+  file: path=/opt/build state=directory owner=jenkins group=jenkins
 
 - file: path=/opt/build/hudson state=directory owner=jenkins group=jenkins
 - copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
@@ -182,7 +187,7 @@
 - lineinfile: dest=/etc/hosts create=true state=present
               regexp='176.57.246.12' line='176.57.246.12 maven.in.nuxeo.com'
   when: "'docker' not in group_names"
-- synchronize: src=/opt/build/keystores dest=/opt/build/ delete=yes recursive=yes
+- synchronize: src=/opt/build/keystores dest=/opt/build/ owner=no group=no delete=yes recursive=yes rsync_path="sudo -u jenkins rsync"
   sudo_user: jenkins
 
 # Kerberos

@@ -16,3 +16,4 @@
        dest=/tmp/chromedriver_linux64.zip
 - command: creates=/usr/bin/chromedriver chdir=/usr/bin
            unzip /tmp/chromedriver_linux64.zip
+- file: path=/usr/bin/chromedriver mode=0755

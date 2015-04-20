@@ -6,7 +6,7 @@
 - name: Update apt cache
   apt: update_cache=yes
 - name: Install Dart
-  apt: name=dart=1.8* state=present
+  apt: name=dart=1.9.* state=present
 - name: Update alternatives
   alternatives: name={{item}} link=/usr/bin/{{item}} path=/usr/lib/dart/bin/{{item}}
   with_items:

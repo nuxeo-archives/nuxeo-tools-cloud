@@ -31,6 +31,12 @@ RUN echo "\nubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 ADD files/start.sh /start.sh
 
+RUN mkdir /home/ubuntu/.ssh
+ADD files/id_rsa.pub /home/ubuntu/.ssh/authorized_keys
+RUN chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+RUN chmod 0600 /home/ubuntu/.ssh/authorized_keys
+RUN chmod 0700 /home/ubuntu/.ssh
+
 EXPOSE 22
 
 ENTRYPOINT ["/start.sh"]
