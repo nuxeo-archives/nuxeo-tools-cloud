@@ -234,4 +234,8 @@
 - get_url: url=http://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
            dest=/opt/jenkins/bin/slave.jar
   sudo_user: jenkins
+- name: Install startup wrapper
+  copy: src=start_slave.sh dest=/opt/jenkins/start_slave.sh
+        mode=0755 owner=jenkins group=jenkins
+  when: "'docker' in group_names and 'multidb' in group_names"
 
