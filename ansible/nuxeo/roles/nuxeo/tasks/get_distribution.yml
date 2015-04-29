@@ -26,7 +26,7 @@
   when: '("http://" not in nuxeo_url and "https://" not in nuxeo_url) and not nuxeo_is_snapshot|bool'
   register: upload_release
 - name: Download snapshot
-  local_action: get_url url={{nuxeo_url}} dest={{nuxeo_base}}/distribution-{{nuxeo_version}}.zip owner={{nuxeo_user}} group={{nuxeo_user}} force={{update_snapshots}}
+  local_action: get_url url={{nuxeo_url}} dest=/tmp/distribution-{{nuxeo_version}}.zip
   when: '("http://" in nuxeo_url or "https://" in nuxeo_url) and nuxeo_is_snapshot|bool'
   register: download_snapshot
 - name: Upload downloaded snapshot
