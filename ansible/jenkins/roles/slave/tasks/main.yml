@@ -239,3 +239,9 @@
         mode=0755 owner=jenkins group=jenkins
   when: "'docker' in group_names and 'multidb' in group_names"
 
+- name: Upgrade/install Redis packages
+  apt: state=latest name={{item}}
+  with_items:
+  - redis-server
+  - redis-tools
+  tags: redis
