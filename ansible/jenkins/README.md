@@ -104,7 +104,7 @@ Launch an instance:
 Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
-     ansible-playbook -i production slave.yml -v
+     ansible-playbook -i hosts-production slave.yml -v
 
 ### Jenkins slave AMI generation
 
