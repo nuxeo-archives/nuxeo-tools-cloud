@@ -4,6 +4,10 @@ mkdir -p /home/ubuntu/.ssh
 chmod -R og-rwx /home/ubuntu/.ssh
 chown -R ubuntu:ubuntu /home/ubuntu/.ssh
 
+# Start Redis
+
+service redis-server start
+
 # Start Xvfb if installed
 
 if [ -f /usr/bin/Xvfb ]; then
