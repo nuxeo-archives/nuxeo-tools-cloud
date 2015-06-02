@@ -107,6 +107,7 @@
 - pip: name=logchart
 - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
 - alternatives: name=editor path=/usr/bin/vim.basic
+- file: src=/usr/lib/jvm/java-1.6.0-openjdk-amd64 path=/usr/lib/jvm/java-6-openjdk state=link
 - file: src=/usr/lib/jvm/java-1.7.0-openjdk-amd64 path=/usr/lib/jvm/java-7-openjdk state=link
 # Xvfb, x11vnc, fluxbox
 - copy: src=xvfb dest=/etc/init.d/xvfb
