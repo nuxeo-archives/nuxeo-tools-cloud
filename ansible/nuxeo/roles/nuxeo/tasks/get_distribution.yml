@@ -11,9 +11,6 @@
 - name: Identify distribution URL
   set_fact:
     nuxeo_url: "{{nuxeo_distribution if nuxeo_distribution is defined else nexus_url|format(nexus_repo,nuxeo_version)}}"
-- name: Remove old release package if present
-  local_action: file path=/tmp/distribution-{{nuxeo_version}}.zip state=absent
-  when: '("http://" in nuxeo_url or "https://" in nuxeo_url) and not nuxeo_is_snapshot|bool'
 - name: Download release
   local_action: get_url url={{nuxeo_url}} dest=/tmp/distribution-{{nuxeo_version}}.zip
   when: '("http://" in nuxeo_url or "https://" in nuxeo_url) and not nuxeo_is_snapshot|bool'
@@ -28,6 +25,9 @@
   copy: src={{nuxeo_distribution}} dest={{nuxeo_base}}/distribution-{{nuxeo_version}}.zip owner={{nuxeo_user}} group={{nuxeo_user}}
   when: '("http://" not in nuxeo_url and "https://" not in nuxeo_url) and not nuxeo_is_snapshot|bool'
   register: upload_release
+- name: Remove old snapshot package if present
+  local_action: file path=/tmp/distribution-{{nuxeo_version}}.zip state=absent
+  when: '("http://" in nuxeo_url or "https://" in nuxeo_url) and nuxeo_is_snapshot|bool'
 - name: Download snapshot
   local_action: get_url url={{nuxeo_url}} dest=/tmp/distribution-{{nuxeo_version}}.zip
   when: '("http://" in nuxeo_url or "https://" in nuxeo_url) and nuxeo_is_snapshot|bool'
