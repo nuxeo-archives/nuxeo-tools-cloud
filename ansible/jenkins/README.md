@@ -71,16 +71,16 @@ For docker tests:
 ## Generate/update image
 
 Prod:
-ansible-playbook -i hosts-production slave.yml [-v]
+ansible-playbook -i inventory/production/hosts slave.yml [-v]
 
 ## Testing
 
-ansible-playbook -i hosts-stage slave.yml -v -c local [--ask-sudo-pass]
-ansible-playbook -i hosts-stage slave.yml [-K]
+ansible-playbook -i inventory/stage/hosts slave.yml -v -c local [--ask-sudo-pass]
+ansible-playbook -i inventory/stage/hosts slave.yml [-K]
 ansible-playbook playbook.yml --list-hosts
 
 Docker test:
-ansible-playbook -i hosts-docker, docker.yml -v
+ansible-playbook -i inventory/docker/hosts, docker.yml -v
 
 ## Complete procedure with Jenkins
 
