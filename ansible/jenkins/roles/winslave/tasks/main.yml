@@ -1,0 +1,399 @@
+---
+- name: Check for AWS CLI
+  win_stat: path='C:\Program Files\Amazon\AWSCLI\aws.exe'
+  register: awscli_installed
+- name: Get AWS CLI
+  win_get_url:
+    url: 'https://s3.amazonaws.com/aws-cli/AWSCLI64.msi'
+    dest: 'C:\AWSCLI64.msi'
+  when: not awscli_installed.stat.exists
+- name: Install AWS CLI
+  win_msi:
+    path: 'C:\AWSCLI64.msi'
+  when: not awscli_installed.stat.exists
+- name: Delete AWS CLI installer
+  raw: 'if exist C:\AWSCLI64.msi del C:\AWSCLI64.msi'
+
+- name: Setup AWS config dir
+  raw: 'if not exist C:\Users\Administrator\.aws mkdir C:\Users\Administrator\.aws'
+- name: Prepare S3 config
+  win_template: src=aws_config.j2 dest='C:\Users\Administrator\.aws\config'
+- name: Prepare S3 credentials
+  win_template: src=aws_credentials.j2 dest='C:\Users\Administrator\.aws\credentials'
+- name: Prepare cache directory
+  raw: 'if not exist c:\cache mkdir c:\cache'
+- name: Sync cache from S3
+  raw: "aws s3 sync s3://{{s3_bucket}}/{{s3_path}} c:/cache --region={{s3_region}} --delete"
+
+
+- name: Check for AutoIt
+  win_stat: path='C:\Program Files (x86)\AutoIt3\autoit3.exe'
+  register: autoit_installed
+- name: Install AutoIt
+  raw: 'start /w c:\cache\installers\exe\autoit-setup.exe /S'
+  when: not autoit_installed.stat.exists
+
+
+- name: Create common Desktop dir
+  raw: 'if not exist c:\Users\Public\Desktop mkdir c:\Users\Public\Desktop'
+
+
+- name: Create Jenkins user
+  win_user:
+    name: 'jenkins'
+    password: "{{jenkins_pass}}"
+    groups: ['Users', 'Remote Desktop Users']
+  register: jenkins_user
+- name: Prepare Jenkins profile script
+  win_template: src=jenkins.au3 dest='C:\jenkins.au3'
+  when: jenkins_user.changed
+- name: Run Jenkins profile script
+  raw: '"C:\Program Files (x86)\AutoIt3\AutoIt3.exe" C:\jenkins.au3'
+  when: jenkins_user.changed
+- name: Delete Jenkins profile script
+  raw: 'if exist C:\jenkins.au3 del C:\jenkins.au3'
+- name: Create empty nuxeo-test-vcs.properties (NXP-17267)
+  raw: 'if not exist C:\Users\jenkins\nuxeo-test-vcs.properties copy NUL C:\Users\jenkins\nuxeo-test-vcs.properties'
+
+
+- name: Check for 7zip
+  win_stat: path='C:\Program Files\7-Zip\7z.exe'
+  register: zip_installed
+- name: Install 7zip
+  win_msi:
+    path: 'C:\cache\installers\msi\7zip.msi'
+  when: not zip_installed.stat.exists
+- name: Add 7zip to path
+  script: 7zip.ps1
+  when: not zip_installed.stat.exists
+
+- name: Check for notepad++
+  win_stat: path='C:\Program Files (x86)\Notepad++\notepad++.exe'
+  register: npp_installed
+- name: Install notepadd++
+  raw: 'C:\cache\installers\exe\npp.exe /S'
+  when: not npp_installed.stat.exists
+
+- name: Check for process explorer
+  win_stat: path='C:\Users\Public\Desktop\procexp.exe'
+  register: procexp_installed
+- name: Install process explorer
+  raw: '7z -oC:\Users\Public\Desktop x C:\cache\installers\zip\ProcessExplorer.zip procexp.exe'
+  when: not procexp_installed.stat.exists
+
+
+- name: Check for JDK 6
+  win_stat: path='C:\Program Files\Java\jdk1.6.0_45'
+  register: jdk6_installed
+- name: Install JDK 6
+  raw: 'start /w c:\cache\installers\exe\jdk6.exe /s'
+  when: not jdk6_installed.stat.exists
+
+- name: Check for JDK 7
+  win_stat: path='C:\Program Files\Java\jdk1.7.0_76'
+  register: jdk7_installed
+- name: Install JDK 7
+  raw: 'start /w c:\cache\installers\exe\jdk7.exe /s'
+  when: not jdk7_installed.stat.exists
+
+- name: Check for JDK 8
+  win_stat: path='C:\Program Files\Java\jdk1.8.0_45'
+  register: jdk8_installed
+- name: Install JDK 8
+  raw: 'start /w c:\cache\installers\exe\jdk8.exe /s'
+  when: not jdk8_installed.stat.exists
+- name: Set JAVA_HOME
+  script: java.ps1
+  when: not jdk8_installed.stat.exists
+
+
+- name: Check for Maven 2.2.1
+  win_stat: path='C:\Program Files (x86)\apache-maven-2.2.1\bin\mvn.bat'
+  register: maven221_installed
+- name: Extract Maven 2.2.1
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\maven-2.2.1.zip'
+  when: not maven221_installed.stat.exists
+- name: Check for Maven 3.0.5
+  win_stat: path='C:\Program Files (x86)\apache-maven-3.0.5\bin\mvn.bat'
+  register: maven305_installed
+- name: Extract Maven 3.0.5
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\maven-3.0.5.zip'
+  when: not maven305_installed.stat.exists
+- name: Check for Maven 3.1.1
+  win_stat: path='C:\Program Files (x86)\apache-maven-3.1.1\bin\mvn.bat'
+  register: maven311_installed
+- name: Extract Maven 3.1.1
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\maven-3.1.1.zip'
+  when: not maven311_installed.stat.exists
+- name: Check for Maven 3.2.5
+  win_stat: path='C:\Program Files (x86)\apache-maven-3.2.5\bin\mvn.bat'
+  register: maven325_installed
+- name: Extract Maven 3.2.5
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\maven-3.2.5.zip'
+  when: not maven325_installed.stat.exists
+- name: Add Maven 3.2.5 to path
+  script: maven325.ps1
+  when: not maven325_installed.stat.exists
+
+- name: Create m2 settings directory
+  raw: 'if not exist c:\Users\jenkins\.m2 mkdir c:\Users\jenkins\.m2'
+- name: Add m2 settings
+  raw: 'if not exist c:\Users\jenkins\.m2\settings.xml copy c:\cache\m2_settings.xml c:\Users\jenkins\.m2\settings.xml'
+- name: Add m2 seed repository
+  raw: 'if not exist c:\m2\repository xcopy c:\cache\m2_repo_seed c:\m2\repository /S /I'
+- name: Fix m2 repo rights
+  raw: 'icacls c:\m2 /grant :r jenkins:F /T /Q'
+
+
+- name: Add instance.clid
+  raw: 'if not exist c:\instance.clid copy c:\cache\instance.clid c:\instance.clid'
+
+
+- name: Check for Ant
+  win_stat: path='C:\Program Files (x86)\apache-ant-1.9.6\bin\ant.bat'
+  register: ant_installed
+- name: Extract Ant
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\apache-ant-1.9.6.zip'
+  when: not ant_installed.stat.exists
+- name: Add Ant to path
+  script: ant.ps1
+  when: not ant_installed.stat.exists
+
+
+- name: Check for Gradle
+  win_stat: path='C:\Program Files (x86)\gradle-1.12\bin\gradle.bat'
+  register: gradle_installed
+- name: Extract Gradle
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\gradle-1.12.zip'
+  when: not gradle_installed.stat.exists
+- name: Add Gradle to path
+  script: gradle.ps1
+  when: not gradle_installed.stat.exists
+
+
+- name: Check for Firefox
+  win_stat: path='C:\Program Files (x86)\Mozilla Firefox\firefox.exe'
+  register: firefox_installed
+- name: Install Firefox
+  raw: 'start /w c:\cache\installers\exe\firefox.exe -ms'
+  when: not firefox_installed.stat.exists
+- name: Add Firefox global config
+  win_copy: src=firefox-local-settings.js dest='C:\Program Files (x86)\Mozilla Firefox\defaults\pref\local-settings.js'
+  when: not firefox_installed.stat.exists
+- name: Setup Firefox global preferences
+  win_copy: src=firefox-mozilla.cfg dest='C:\Program Files (x86)\Mozilla Firefox\mozilla.cfg'
+  when: not firefox_installed.stat.exists
+
+- name: Check for Mozilla Maintenance Service
+  win_stat: path='C:\Program Files (x86)\Mozilla Maintenance Service\uninstall.exe'
+  register: mozilla_maintenance
+- name: Uninstall Mozilla Maintenance Service
+  raw: '"C:\Program Files (x86)\Mozilla Maintenance Service\uninstall.exe" /S'
+  when: mozilla_maintenance.stat.exists
+
+- name: Check for VCRedist x86
+  win_stat: path='C:\Windows\SysWOW64\msvcr110.dll'
+  register: vcredistx86_installed
+- name: Install VCRedist x86
+  raw: 'start /w c:\cache\installers\exe\vcredist_x86.exe /q /norestart'
+  when: not vcredistx86_installed.stat.exists
+- name: Check for VCRedist x64
+  win_stat: path='C:\Windows\system32\msvcr110.dll'
+  register: vcredistx64_installed
+- name: Install VCRedist x64
+  raw: 'start /w c:\cache\installers\exe\vcredist_x64.exe /q /norestart'
+  when: not vcredistx64_installed.stat.exists
+
+- name: Check for misc 3rd-party tools
+  win_stat: path='C:\Program Files (x86)\3rdparty'
+  register: thirdparty_installed
+- name: Make 3rd-parties dir
+  raw: 'if not exist "C:\Program Files (x86)\3rdparty" mkdir "C:\Program Files (x86)\3rdparty"'
+  when: not thirdparty_installed.stat.exists
+- name: Extract 3rd-parties
+  raw: '7z x -y -o"C:\Program Files (x86)\3rdparty" c:\cache\installers\zip\3parties-2.3.zip'
+  when: not thirdparty_installed.stat.exists
+- name: Add 3rd-parties to path
+  script: 3rdparties.ps1
+  when: not thirdparty_installed.stat.exists
+
+
+- name: Check for Dart SDK
+  win_stat: path='C:\Program Files\dart-sdk'
+  register: dart_installed
+- name: Extract Dart SDK
+  raw: '7z x -y -o"C:\Program Files" c:\cache\installers\zip\dart-sdk.zip'
+  when: not dart_installed.stat.exists
+- name: Add Dart SDK to path
+  script: dart-sdk.ps1
+  when: not dart_installed.stat.exists
+
+
+- name: Check for SVN
+  win_stat: path='C:\Program Files\SlikSVN\bin\svn.exe'
+  register: svn_installed
+- name: Install SVN
+  win_msi:
+    path: 'c:\cache\installers\msi\SlikSVN.msi'
+  when: not svn_installed.stat.exists
+
+
+- name: Check for Mercurial
+  win_stat: path='C:\Program Files\TortoiseHG\hg.exe'
+  register: hg_installed
+- name: Install Mercurial
+  win_msi:
+    path: 'c:\cache\installers\msi\TortoiseHG.msi'
+  when: not hg_installed.stat.exists
+# When it freezes at thos stage, reboot the windows host and relaunch the script
+
+
+- name: Check for Git
+  win_stat: path='C:\Program Files (x86)\git\bin\git.exe'
+  register: git_installed
+- name: Install Git
+  raw: 'start /w c:\cache\installers\exe\msysgit.exe /SILENT /NORESTART'
+  when: not git_installed.stat.exists
+- name: Add git to path
+  script: git.ps1
+  when: not git_installed.stat.exists
+- name: Setup git longpaths
+  raw: 'git config --system core.longpaths true'
+  when: not git_installed.stat.exists
+
+
+- name: Check for PhantomJS
+  win_stat: path='C:\Program Files (x86)\phantomjs-1.9.8-windows\phantomjs.exe'
+  register: phantomjs_installed
+- name: Install PhantomJS
+  raw: '7z x -y -o"C:\Program Files (x86)" c:\cache\installers\zip\phantomjs.zip'
+  when: not phantomjs_installed.stat.exists
+- name: Add PhantomJS to path
+  script: phantomjs.ps1
+  when: not phantomjs_installed.stat.exists
+
+
+- name: Check for Node.js
+  win_stat: path='C:\Program Files\nodejs\node.exe'
+  register: nodejs_installed
+- name: Installe Node.js
+  win_msi:
+    path: 'c:\cache\installers\msi\nodejs.msi'
+  when: not nodejs_installed.stat.exists
+
+- name: Check for initial npm config
+  win_stat: path='C:\Users\Administrator\AppData\Roaming\npm'
+  register: npm_configured
+- name: Make npm profile dir
+  raw: 'mkdir C:\Users\Administrator\AppData\Roaming\npm'
+  when: not npm_configured.stat.exists
+- name: Make npm quieter
+  raw: 'npm config -g set loglevel warn'
+  when: not npm_configured.stat.exists
+- name: Remove npm colors
+  raw: 'npm config -g set color false'
+  when: not npm_configured.stat.exists
+- name: Change npm prefix dir
+  raw: 'npm config -g set prefix c:\npm'
+  when: not npm_configured.stat.exists
+- name: Create npm prefix dir
+  raw: 'if not exist c:\npm mkdir c:\npm'
+  when: not npm_configured.stat.exists
+- name: Add prefix dir to path
+  script: npm.ps1
+  when: not npm_configured.stat.exists
+- name: Install npm packages
+  raw: 'npm install -g bower yo grunt-cli gulp > c:\npm.log'
+  when: not npm_configured.stat.exists
+- name: Fix rights on npm prefix dir
+  raw: 'icacls c:\npm /grant :r jenkins:F /T /Q'
+  when: not npm_configured.stat.exists
+- name: Copy npm config to jenkins user
+  raw: 'xcopy C:\Users\Administrator\AppData\Roaming\npm C:\Users\jenkins\AppData\Roaming\npm /S /I'
+  when: not npm_configured.stat.exists
+
+
+- name: Check for Python 2.7
+  win_stat: path='C:\Python27\python.exe'
+  register: python27_installed
+- name: Install Python 2.7
+  raw: 'msiexec /i c:\cache\installers\msi\python-2.7.msi ALLUSERS=1 /qn'
+  when: not python27_installed.stat.exists
+- name: Add python to path
+  script: python.ps1
+  when: not python27_installed.stat.exists
+- name: Check for virtualenv
+  win_stat: path='C:\python27\scripts\virtualenv.exe'
+  register: venv_installed
+- name: Install virtualenv
+  raw: 'pip install virtualenv'
+  when: not venv_installed.stat.exists
+- name: Check for VC++ for Python
+  win_stat: path='C:\Program Files (x86)\Common Files\Microsoft\Visual C++ for Python\9.0\vcvarsall.bat'
+  register: vcpython_installed
+- name: Install VC++ for Python
+  raw: 'msiexec /i c:\cache\installers\msi\VCForPython27.msi ALLUSERS=1 /qn'
+  when: not vcpython_installed.stat.exists
+
+# Drive stuffs
+
+- name: Check for PyQt4
+  win_stat: path='C:\Python27\Lib\site-packages\PyQt4'
+  register: pyqt4_installed
+- name: Install PyQt4
+  raw: 'start /w c:\cache\installers\exe\PyQt4.exe /S'
+  when: not pyqt4_installed.stat.exists
+- name: Check for Wheel
+  win_stat: path='C:\Python27\scripts\wheel.exe'
+  register: wheel_installed
+- name: Install Wheel
+  raw: 'pip install wheel'
+  when: not wheel_installed.stat.exists
+- name: Check for cx_Freeze
+  win_stat: path='C:\Python27\Lib\site-packages\cx_Freeze'
+  register: cxfreeze_installed
+- name: Install cx_Freeze
+  raw: 'pip install cx_Freeze'
+  when: not cxfreeze_installed.stat.exists
+- name: Check for faulthandler
+  win_stat: path='C:\Python27\Lib\site-packages\faulthandler.pyd'
+  register: faulthandler_installed
+- name: Install faulthandler
+  raw: 'pip install faulthandler'
+  when: not faulthandler_installed.stat.exists
+- name: Check for psutil
+  win_stat: path='C:\Python27\Lib\site-packages\psutil'
+  register: psutil_installed
+- name: Install psutil
+  raw: 'pip install psutil'
+  when: not psutil_installed.stat.exists
+- name: Check for yappi
+  win_stat: path='C:\Python27\scripts\yappi.exe'
+  register: yappi_installed
+- name: Install yappi
+  raw: 'pip install yappi'
+  when: not yappi_installed.stat.exists
+- name: check for PyCrypto
+  win_stat: path='C:\Python27\Lib/site-packages\pycrypto'
+  register: pycrypto_installed
+- name: Install PyCrypto
+  raw: 'pip install pycrypto'
+  when: not pycrypto_installed.stat.exists
+
+# pywin32: install manually from http://sourceforge.net/projects/pywin32/files/pywin32/
+
+
+# Install after Python, otherwise Python 3 is in the path
+- name: Check for LibreOffice
+  win_stat: path='C:\Program Files (x86)\LibreOffice 4\program\soffice.exe'
+  register: libreoffice_installed
+- name: Install LibreOffice
+  win_msi:
+    path: 'c:\cache\installers\msi\libreoffice.msi'
+  when: not libreoffice_installed.stat.exists
+- name: Add LibreOffice to path
+  script: libreoffice.ps1
+  when: not libreoffice_installed.stat.exists
+
+
+

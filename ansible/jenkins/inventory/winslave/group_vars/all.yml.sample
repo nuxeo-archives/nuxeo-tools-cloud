@@ -1,0 +1,7 @@
+---
+access_key_id: MY_AWS_ACCESS_KEY_ID
+secret_access_key: MY_AWS_SECRET_ACCESS_KEY
+s3_region: eu-west-1
+s3_bucket: mybucket-jenkins-resources
+s3_path: ansible/windows
+

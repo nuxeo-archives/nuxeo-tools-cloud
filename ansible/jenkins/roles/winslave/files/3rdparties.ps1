@@ -1,0 +1,1 @@
+[Environment]::SetEnvironmentVariable("PATH", "C:\Program Files (x86)\3rdparty\ffmpeg\bin;C:\Program Files (x86)\3rdparty\ImageMagick;" + [Environment]::GetEnvironmentVariable("PATH", "Machine") + ";C:\Program Files (x86)\3rdparty\pdftohtml;C:\Program Files (x86)\3rdparty\gs\bin;C:\Program Files (x86)\3rdparty\misc\bin", "Machine")

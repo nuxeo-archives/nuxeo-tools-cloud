@@ -1,0 +1,12 @@
+- hosts: localhost
+  connection: local
+  sudo: no
+  gather_facts: no
+  roles:
+  - winslave_cache
+
+- hosts: windows
+  gather_facts: no
+  roles:
+  - winslave
+

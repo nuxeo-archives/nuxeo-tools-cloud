@@ -1,0 +1,14 @@
+Requirements:
+- control / client machines setup as described in http://docs.ansible.com/intro_windows.html
+- S3 bucket with access keys to read/write in it
+
+Put your S3 info in inventory/winslave/all.yml and the Windows administrator password in inventory/winslave/windows.yml
+
+
+Run with: ansible-playbook -i inventory/winslave/hosts winslave.yml -v
+
+
+Post-run:
+- install pywin32 manually (no silent install)
+- install the jenkins service (running with the jenkins user)
+
