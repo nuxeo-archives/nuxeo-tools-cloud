@@ -42,7 +42,7 @@
   win_user:
     name: 'jenkins'
     password: "{{jenkins_pass}}"
-    groups: ['Users', 'Remote Desktop Users']
+    groups: ['Users', 'Remote Desktop Users', 'Administrators']
   register: jenkins_user
 - name: Prepare Jenkins profile script
   win_template: src=jenkins.au3 dest='C:\jenkins.au3'

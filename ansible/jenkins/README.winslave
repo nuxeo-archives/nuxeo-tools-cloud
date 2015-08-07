@@ -9,6 +9,9 @@ Run with: ansible-playbook -i inventory/winslave/hosts winslave.yml -v
 
 
 Post-run:
+- AWS: expand disk (in Administrative Tools / Computer Management)
 - install pywin32 manually (no silent install)
-- install the jenkins service (running with the jenkins user)
+- add https://qa.nuxeo.org/ to the exception list in the java control panel (javacp) security tab
+- in powershell (as admin), Set-ExecutionPolicy unrestricted
+- install the jenkins service (running with the jenkins user - jenkins must be in the administrators group)
 
