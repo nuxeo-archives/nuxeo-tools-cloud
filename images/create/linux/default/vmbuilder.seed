@@ -1,1 +1,0 @@
-cloud-init cloud-init/datasources string NoCloud, OVF, Ec2

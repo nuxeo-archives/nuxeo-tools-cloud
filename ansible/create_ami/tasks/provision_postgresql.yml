@@ -1,3 +1,0 @@
----
-- name: dummy postgresql task
-  shell: hostname

@@ -1,4 +1,0 @@
----
-- name: dummy nuxeo task
-  shell: hostname
-
