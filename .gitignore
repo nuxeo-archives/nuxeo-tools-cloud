@@ -1,2 +1,5 @@
 *.pyc
 *.bak
+
+ansible/nuxeo/private
+ansible/nuxeo/venv
