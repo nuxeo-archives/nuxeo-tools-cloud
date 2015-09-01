@@ -104,6 +104,7 @@ Launch an instance:
  - set 'default' security group (it's preconfigured to fit requirements)
 
 Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.
+
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
      ansible-playbook -i inventory/production/hosts --limit aws_ondemand slave.yml -v
@@ -111,8 +112,11 @@ Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 ### Jenkins slave AMI generation
 
 Select the "Jenkins slave template <DATE>" instance on AWS interface and click "Action / Create Image (EBS AMI)".
+
 Set "`Jenkins_AMI_<DATE>_slave`" as name.
-Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images:
+
+Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images
+
 Copy the AMI ID (for instance ami-a3b1a7d7).
 
 Repeat the operation to generate an identical AMI with name: "`Jenkins_AMI_<DATE>_ondemand`"
@@ -120,9 +124,13 @@ Repeat the operation to generate an identical AMI with name: "`Jenkins_AMI_<DATE
 ### Jenkins configuration
 
 Browse https://qa.nuxeo.org/jenkins/configure#section147
+
 In the "Cloud / Amazon EC2 / AMIs" section, set the AMI ID and check its availability ("Check AMI" button).
+
 Instance Type: C3Xlarge.
+
 Label "SLAVE".
+
 Jobs must set "SLAVE" as slave restriction to use that EC2 image.
 
 Same for the "ondemand" label with the second AMI.
