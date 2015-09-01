@@ -71,16 +71,18 @@ For docker tests:
 ## Generate/update image
 
 Prod:
-ansible-playbook -i inventory/production/hosts slave.yml [-v]
 
-## Testing
+    ansible-playbook -i inventory/production/hosts slave.yml [-v]
 
-ansible-playbook -i inventory/stage/hosts slave.yml -v -c local [--ask-sudo-pass]
-ansible-playbook -i inventory/stage/hosts slave.yml [-K]
-ansible-playbook playbook.yml --list-hosts
+Testing:
+
+    ansible-playbook -i inventory/stage/hosts slave.yml -v -c local [--ask-sudo-pass]
+    ansible-playbook -i inventory/stage/hosts slave.yml [-K]
+    ansible-playbook playbook.yml --list-hosts
 
 Docker test:
-ansible-playbook -i inventory/docker/hosts, docker.yml -v
+
+    ansible-playbook -i inventory/docker/hosts docker.yml -v
 
 ## Complete procedure with Jenkins
 
@@ -104,7 +106,7 @@ Launch an instance:
 Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
-     ansible-playbook -i hosts-production slave.yml -v
+     ansible-playbook -i inventory/production/hosts --limit aws_ondemand slave.yml -v
 
 ### Jenkins slave AMI generation
 
