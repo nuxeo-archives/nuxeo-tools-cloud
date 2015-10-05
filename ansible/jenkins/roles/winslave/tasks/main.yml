@@ -97,7 +97,7 @@
   when: not jdk7_installed.stat.exists
 
 - name: Check for JDK 8
-  win_stat: path='C:\Program Files\Java\jdk1.8.0_45'
+  win_stat: path='C:\Program Files\Java\jdk1.8.0_60'
   register: jdk8_installed
 - name: Install JDK 8
   raw: 'start /w c:\cache\installers\exe\jdk8.exe /s'

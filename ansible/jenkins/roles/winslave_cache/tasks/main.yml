@@ -35,7 +35,7 @@
   args:
     creates: cache/installers/exe/jdk7.exe
 - name: Get JDK 8 installer
-  command: "wget -q -Ocache/installers/exe/jdk8.exe --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u45-b15/jdk-8u45-windows-x64.exe'"
+  command: "wget -q -Ocache/installers/exe/jdk8.exe --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'ttp://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-windows-x64.exe'"
   args:
     creates: cache/installers/exe/jdk8.exe
 
