@@ -220,6 +220,15 @@
     version: 1.3.12
   tags: nodejs
 
+# Azure CLI
+- name: Install Azure CLI
+  npm: name=azure-cli version=0.9.10 global=yes state=latest
+  register: azure_install
+- name: Setup Azure CLI
+  shell: azure account import /opt/build/keystores/azure.nuxeo.com.publishsettings
+  sudo_user: jenkins
+  when: azure_install.changed
+
 # Java versions
 - include: java6.yml
   tags: java,java6
