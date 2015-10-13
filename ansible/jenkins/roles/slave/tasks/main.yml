@@ -191,6 +191,9 @@
   when: "'docker' not in group_names"
 - synchronize: src=/opt/build/keystores dest=/opt/build/ owner=no group=no delete=yes recursive=yes rsync_path="sudo -u jenkins rsync"
   sudo_user: jenkins
+  register: keystore_sync
+- shell: chown -R jenkins:jenkins /opt/build/keystores
+  when: keystore_sync.changed
 
 # Kerberos
 - name: Kerberos krb5.conf
@@ -256,3 +259,7 @@
   - redis-server
   - redis-tools
   tags: redis
+
+- name: Create nuxeo-test-vcs.properties (NXP-17267)
+  file: path=/opt/jenkins/nuxeo-test-vcs.properties owner=jenkins group=jenkins state=touch
+
