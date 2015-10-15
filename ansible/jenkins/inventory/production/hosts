@@ -1,5 +1,9 @@
 [slaves:children]
+local
 aws
+
+[local:children]
+medusa.in.nuxeo.com
 
 [aws:children]
 aws_ondemand

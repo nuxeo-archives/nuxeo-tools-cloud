@@ -20,6 +20,14 @@
 
 # exit if x264 is already available and ffmpeg was compiled with libx264
 x264 --help >/dev/null 2>&1 && (ffmpeg 2>&1 |grep libx264) && exit 0
+# check for yasm version
+if which yasm; then
+    if dpkg --compare-versions $(yasm --version | head -n 1 | awk '{print $2}') lt 1.2; then
+        export BUILD_YASM=true
+    fi
+else
+    export BUILD_YASM=true
+fi
 git clone https://github.com/nuxeo/ffmpeg-nuxeo /tmp/ffmpeg-nuxeo
 cd /tmp/ffmpeg-nuxeo
 git checkout master
