@@ -1,9 +1,13 @@
 [slaves:children]
 local
+remote
 aws
 
 [local]
 medusa.in.nuxeo.com
+
+[remote]
+kraken.nuxeo.com
 
 [aws:children]
 aws_ondemand
