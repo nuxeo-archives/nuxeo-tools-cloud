@@ -2,7 +2,7 @@
 local
 aws
 
-[local:children]
+[local]
 medusa.in.nuxeo.com
 
 [aws:children]
