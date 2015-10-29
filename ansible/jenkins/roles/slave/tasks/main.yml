@@ -55,6 +55,7 @@
 - name: Upgrade/install build dependencies
   apt: state=latest name={{item}}
   with_items:
+  - ntp
   - python-httplib2
   - openjdk-6-jdk
   - openjdk-7-jdk
