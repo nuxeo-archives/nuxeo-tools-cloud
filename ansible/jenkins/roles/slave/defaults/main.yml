@@ -1,2 +1,3 @@
 ---
 node_version: "0.10.32"
+m2_settings_file: /opt/build/hudson/m2remote/settings.xml

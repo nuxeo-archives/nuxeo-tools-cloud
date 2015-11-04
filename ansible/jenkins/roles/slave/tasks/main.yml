@@ -24,7 +24,7 @@
 - copy: src=jenkins_ssh_config dest=/opt/jenkins/.ssh/config
         owner=jenkins group=jenkins mode=600 backup=no
 - file: path=/opt/jenkins/.m2 state=directory owner=jenkins group=jenkins
-- copy: src=/opt/build/hudson/m2remote/settings.xml dest=/opt/jenkins/.m2/settings.xml
+- copy: src={{m2_settings_file}} dest=/opt/jenkins/.m2/settings.xml
         owner=jenkins group=jenkins
 - copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
         owner=jenkins group=jenkins
