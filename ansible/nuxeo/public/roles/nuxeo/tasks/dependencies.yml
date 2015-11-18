@@ -9,19 +9,19 @@
   - ufraw
   - libwpd-tools
 - name: Download JDK 8
-  command: "wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u25-b17/jdk-8u25-linux-x64.tar.gz'"
+  command: "wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u65-b17/jdk-8u65-linux-x64.tar.gz'"
   args:
-    creates: /usr/lib/jvm/jdk1.8.0_25
+    creates: /usr/lib/jvm/jdk1.8.0_65
 - name: Install JDK 8
   command: tar xzf /tmp/jdk-8-linux-x64.tgz
   args:
-    creates: /usr/lib/jvm/jdk1.8.0_25
+    creates: /usr/lib/jvm/jdk1.8.0_65
     chdir: /usr/lib/jvm
   register: extracted_java8
 - name: Remove JDK 8 archive
   file: path=/tmp/jdk-8-linux-x64.tgz state=absent
 - name: Create JDK 8 symlink
-  file: src=/usr/lib/jvm/jdk1.8.0_25 path=/usr/lib/jvm/java-8 state=link
+  file: src=/usr/lib/jvm/jdk1.8.0_65 path=/usr/lib/jvm/java-8 state=link
   when: extracted_java8.changed
 - name: Install alternatives for JDK 8
   shell: update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
