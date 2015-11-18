@@ -21,7 +21,7 @@ update-locale LANG=en_US.UTF-8
 apt-get update
 apt-get -q -y upgrade
 apt-get -q -y install apache2
-apt-get -q -y install openssh-server openssh-client vim postfix pwgen
+apt-get -q -y install openssh-server openssh-client vim postfix pwgen curl
 
 # Secure postfix
 perl -p -i -e "s/^inet_interfaces\s*=.*$/inet_interfaces=127.0.0.1/" /etc/postfix/main.cf
@@ -29,6 +29,14 @@ perl -p -i -e "s/^inet_interfaces\s*=.*$/inet_interfaces=127.0.0.1/" /etc/postfi
 # Install Java 7
 apt-get -q -y install openjdk-7-jdk
 update-java-alternatives -s java-1.7.0-openjdk-amd64
+
+# Install Java 8
+curl -o/tmp/jdk-8-linux-x64.tgz -L --insecure --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u40-b26/jdk-8u40-linux-x64.tar.gz'
+tar xzf /tmp/jdk-8-linux-x64.tgz -C /usr/lib/jvm
+rm /tmp/jdk-8-linux-x64.tgz
+ln -s /usr/lib/jvm/jdk1.8.0_40 /usr/lib/jvm/java-8
+update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
+update-alternatives --set java /usr/lib/jvm/java-8/jre/bin/java
 
 # Install Nuxeo without sctarting it
 echo exit 101 > /usr/sbin/policy-rc.d

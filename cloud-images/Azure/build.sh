@@ -21,7 +21,7 @@ azure vm create --vm-name nuxeo-template-${tstamp} --vm-size ${TYPE} --ssh 22 --
 while [ "$(azure vm show nuxeo-template-${tstamp} --json | grep 'InstanceStatus' |  tr '"' ' ' | awk '{print $3}')" != "StoppedVM" ]; do sleep 10; done
 
 # Create image and delete instance
-azure vm capture -t -e "Nuxeo 6.0 LTS" nuxeo-template-${tstamp} nuxeo-6.0-lts-${tstamp}
+azure vm capture -t -e "Nuxeo LTS 2015" nuxeo-template-${tstamp} nuxeo-lts-2015-${tstamp}
 
 # Delete service
 azure service delete nuxeo-template-${tstamp} -q

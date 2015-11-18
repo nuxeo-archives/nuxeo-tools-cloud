@@ -15,7 +15,7 @@ while [ "$(gcloud compute instances describe nuxeo-template-${tstamp} --zone ${Z
 gcloud compute instances delete nuxeo-template-${tstamp} --keep-disks boot --zone ${ZONE} -q
 
 # Create image
-gcloud compute images create nuxeo-6-lts-${tstamp} --source-disk nuxeo-template-${tstamp} --source-disk-zone ${ZONE}
+gcloud compute images create nuxeo-lts-2015-${tstamp} --source-disk nuxeo-template-${tstamp} --source-disk-zone ${ZONE}
 
 # Delete disk
 gcloud compute disks delete nuxeo-template-${tstamp} --zone ${ZONE} -q
