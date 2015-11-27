@@ -11,9 +11,8 @@
 - name: Install Google Chrome
   apt: pkg=google-chrome-stable state=installed
 - name: Install ChromeDriver 2.16
-  uri: creates=/tmp/chromedriver_linux64.zip
-       url=http://chromedriver.storage.googleapis.com/2.16/chromedriver_linux64.zip
-       dest=/tmp/chromedriver_linux64.zip
+  get_url: url=http://chromedriver.storage.googleapis.com/2.16/chromedriver_linux64.zip
+           dest=/tmp/chromedriver_linux64.zip
 - command: creates=/usr/bin/chromedriver chdir=/usr/bin
            unzip /tmp/chromedriver_linux64.zip
 - file: path=/usr/bin/chromedriver mode=0755

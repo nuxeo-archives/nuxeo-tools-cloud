@@ -140,13 +140,13 @@
 
 # Firefox
 # Can't use APT which pulls unfixed FF version
-- name: Check if Firefox 26 is installed
+- name: Check if Firefox 42 is installed
   shell: "firefox --version"
-  register: ff26_installed
+  register: ff42_installed
   ignore_errors: True
   changed_when: false
 - include: firefox.yml
-  when: (ff26_installed.rc != 0 or ff26_installed.stdout != 'Mozilla Firefox 26.0.0')
+  when: (ff42_installed.rc != 0 or ff42_installed.stdout != 'Mozilla Firefox 42.0')
 
 # Google Chrome
 - include: google-chrome.yml
@@ -164,8 +164,7 @@
   tags: maven
 
 - name: Gradle 1.x
-  uri: creates=/opt/build/tools/gradle
-       url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
+  get_url: url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
        dest=/tmp/gradle-1.6-bin.zip
 - command: creates=/opt/build/tools/gradle
            unzip /tmp/gradle-1.6-bin.zip -d /opt/build/tools/

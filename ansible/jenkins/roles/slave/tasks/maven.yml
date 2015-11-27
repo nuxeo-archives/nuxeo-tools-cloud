@@ -1,17 +1,15 @@
 ---
 - name: Maven 2.x
-  uri: creates=/opt/build/tools/maven2
-       url=http://archive.apache.org/dist/maven/binaries/apache-maven-2.2.1-bin.tar.gz
-       dest=/tmp/apache-maven-2.2.1-bin.tar.gz
+  get_url: url=http://archive.apache.org/dist/maven/binaries/apache-maven-2.2.1-bin.tar.gz
+           dest=/tmp/apache-maven-2.2.1-bin.tar.gz
 - command: creates=/opt/build/tools/maven2 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-2.2.1-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-2.2.1 path=/opt/build/tools/maven2 state=link
 - file: path=/tmp/apache-maven-2.2.1-bin.tar.gz state=absent
 
 - name: Maven 3.0.x
-  uri: creates=/opt/build/tools/maven3.0
-       url=http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz
-       dest=/tmp/apache-maven-3.0.5-bin.tar.gz
+  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz
+           dest=/tmp/apache-maven-3.0.5-bin.tar.gz
 - command: creates=/opt/build/tools/maven3.0 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.0.5-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven3.0 state=link
@@ -19,9 +17,8 @@
 - file: path=/tmp/apache-maven-3.0.5-bin.tar.gz state=absent
 
 - name: Maven 3.1.x
-  uri: creates=/opt/build/tools/maven3.1
-       url=http://www.us.apache.org/dist/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
-       dest=/tmp/apache-maven-3.1.1-bin.tar.gz
+  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
+           dest=/tmp/apache-maven-3.1.1-bin.tar.gz
 - command: creates=/opt/build/tools/maven3.1 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.1.1-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.1.1 path=/opt/build/tools/maven3.1 state=link
@@ -29,9 +26,8 @@
 - file: path=/tmp/apache-maven-3.1.1-bin.tar.gz state=absent
 
 - name: Maven 3.2.x
-  uri: creates=/opt/build/tools/apache-maven3.2.5
-       url=http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
-       dest=/tmp/apache-maven-3.2.5-bin.tar.gz
+  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
+           dest=/tmp/apache-maven-3.2.5-bin.tar.gz
 - command: creates=/opt/build/tools/apache-maven3.2.5 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.2.5-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.2.5 path=/opt/build/tools/maven3.2 state=link
@@ -39,9 +35,8 @@
 - file: path=/tmp/apache-maven-3.2.5-bin.tar.gz state=absent
 
 - name: Maven 3.3.x
-  uri: creates=/opt/build/tools/apache-maven3.3.3
-       url=http://www.us.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
-       dest=/tmp/apache-maven-3.3.3-bin.tar.gz
+  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+           dest=/tmp/apache-maven-3.3.3-bin.tar.gz
 - command: creates=/opt/build/tools/apache-maven3.3.3 chdir=/opt/build/tools
            tar zxvf /tmp/apache-maven-3.3.3-bin.tar.gz
 - file: src=/opt/build/tools/apache-maven-3.3.3 path=/opt/build/tools/maven3.3 state=link

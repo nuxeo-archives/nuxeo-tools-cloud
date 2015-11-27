@@ -1,7 +1,6 @@
 ---
 - name: Download JDK 6
-  uri: creates=/usr/lib/jvm/jdk1.6.0_33
-       url="http://javadl.sun.com/webapps/download/AutoDL?BundleId=63975"
+  get_url: url="http://javadl.sun.com/webapps/download/AutoDL?BundleId=63975"
        dest=/tmp/jdk-6-linux-x64.bin
 - name: Install JDK 6
   command: creates=/usr/lib/jvm/jdk1.6.0_33 chdir=/usr/lib/jvm
