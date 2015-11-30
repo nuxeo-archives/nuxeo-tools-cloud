@@ -1,8 +1,7 @@
 ---
 - name: Firefox 26
-  uri: creates=/opt/build/tools/firefox-26
-       url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/26.0/linux-x86_64/en-US/firefox-26.0.tar.bz2
-       dest=/tmp/firefox-26.0.tar.bz2
+  get_url: url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/26.0/linux-x86_64/en-US/firefox-26.0.tar.bz2
+           dest=/tmp/firefox-26.0.tar.bz2
 - command: creates=/opt/build/tools/firefox-26 chdir=/opt/build/tools
            tar jxvf /tmp/firefox-26.0.tar.bz2
 - command: creates=/opt/build/tools/firefox-26

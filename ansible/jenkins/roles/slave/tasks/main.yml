@@ -140,13 +140,15 @@
 
 # Firefox
 # Can't use APT which pulls unfixed FF version
-- name: Check if Firefox 42 is installed
+- name: Check if Firefox is installed
   shell: "firefox --version"
-  register: ff42_installed
+  register: ff_installed
   ignore_errors: True
   changed_when: false
-- include: firefox.yml
-  when: (ff42_installed.rc != 0 or ff42_installed.stdout != 'Mozilla Firefox 42.0')
+- include: firefox26.yml
+  when: (ff_installed.rc != 0 or ff_installed.stdout != 'Mozilla Firefox 26.0')
+#- include: firefox42.yml
+#  when: (ff_installed.rc != 0 or ff_installed.stdout != 'Mozilla Firefox 42.0')
 
 # Google Chrome
 - include: google-chrome.yml
