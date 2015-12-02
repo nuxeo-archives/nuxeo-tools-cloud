@@ -104,6 +104,9 @@
   - python-qt4
   - libffi-dev
   - python-virtualenv
+  # Useful to have
+  - python-lxml
+  - python-requests
 - apt: state=latest name=tcpwatch-httpproxy install_recommends=no
 - pip: name=logchart
 - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
