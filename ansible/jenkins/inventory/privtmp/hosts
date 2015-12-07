@@ -5,5 +5,5 @@ docker
 slaves
 
 [slaves]
-privcontainer ansible_ssh_port=32772 ansible_ssh_host=127.0.0.1
+privcontainer ansible_ssh_port=32771 ansible_ssh_host=127.0.0.1
 

@@ -14,7 +14,7 @@ aws_ondemand
 aws_static
 
 [aws_ondemand]
-54.154.34.1
+52.16.198.79
 
 [aws_static]
 linaws1.nuxeo.org

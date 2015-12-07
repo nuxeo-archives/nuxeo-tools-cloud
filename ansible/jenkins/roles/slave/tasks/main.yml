@@ -192,7 +192,7 @@
               regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
   when: "'docker' not in group_names and 'local' not in group_names"
 - lineinfile: dest=/etc/hosts create=true state=present
-              regexp='176.57.246.12' line='176.57.246.12 maven.in.nuxeo.com'
+              regexp='54.217.213.210' line='54.217.213.210 maven.in.nuxeo.com'
   when: "'docker' not in group_names and 'local' not in group_names"
 - synchronize: src=/opt/build/keystores dest=/opt/build/ owner=no group=no delete=yes recursive=yes rsync_path="sudo -u jenkins rsync"
   sudo_user: jenkins
