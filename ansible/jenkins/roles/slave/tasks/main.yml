@@ -137,9 +137,6 @@
 - copy: src=use_mnt_ondemand.sh dest=/opt/jenkins/use_mnt.sh
         mode=755 owner=jenkins group=jenkins
   when: "'aws_ondemand' in group_names"
-- copy: src=use_mnt_static.sh dest=/opt/jenkins/use_mnt.sh
-        mode=755 owner=jenkins group=jenkins
-  when: "'aws_static' in group_names"
 
 # Firefox
 # Can't use APT which pulls unfixed FF version
@@ -186,8 +183,6 @@
 - lineinfile: dest=/etc/rc.local backup=true state=present
               regexp='^.*use_mnt.sh.*$' line='/opt/jenkins/use_mnt.sh || true' insertbefore='^python /usr/bin/userdata'
   when: "'aws' in group_names"
-- shell: ~jenkins/use_mnt.sh
-  when: "'aws_static' in group_names"
 - lineinfile: dest=/etc/hosts create=true state=present
               regexp='176.57.246.10' line='176.57.246.10 thorin thorin.in.nuxeo.com qa qa.nuxeo.org qapriv qapriv.nuxeo.org'
   when: "'docker' not in group_names and 'local' not in group_names"
