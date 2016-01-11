@@ -42,6 +42,8 @@
 - copy: src=/opt/build/hudson/.s3cfg dest=/opt/jenkins/.s3cfg
         owner=jenkins group=jenkins mode=600 backup=no
 
+- name: Add git-core ppa
+  apt_repository: repo='ppa:git-core'
 - name: Update apt cache
   apt: update_cache=yes cache_valid_time=7200
 - name: Upgrade/install ansible dependencies
