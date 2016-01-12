@@ -20,6 +20,9 @@
   file: path={{nuxeo_base}}/nuxeo-{{nuxeo_version}}-{{date.stdout}}/nxserver/config state=directory owner={{nuxeo_user}} group={{nuxeo_user}}
 - name: Copy initial users.csv
   copy: src=users.csv dest={{nuxeo_base}}/nuxeo-{{nuxeo_version}}-{{date.stdout}}/nxserver/config/users.csv owner={{nuxeo_user}} group={{nuxeo_user}}
+- name: Add CORS config
+  copy: src=cors-config.xml dest={{nuxeo_base}}/nuxeo-{{nuxeo_version}}-{{date.stdout}}/nxserver/config/cors-config.xml owner={{nuxeo_user}} group={{nuxeo_user}}
+  when: enable_cors is defined and enable_cors
 - name: Remove temporary dir
   file: path={{nuxeo_base}}/ansible_tmp state=absent
 - name: Stop nuxeo

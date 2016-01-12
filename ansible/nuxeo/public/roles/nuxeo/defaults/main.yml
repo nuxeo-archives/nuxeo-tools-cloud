@@ -5,6 +5,7 @@ nexus_url: "https://maven.nuxeo.org/nexus/service/local/artifact/maven/redirect?
 update_snapshots: false
 compile_ffmpeg: true
 reset_data: false
+enable_cors: false
 nuxeo_service_name: "nuxeo"
 nuxeo_user: "nuxeo"
 nuxeo_base: "/opt/nuxeo"
