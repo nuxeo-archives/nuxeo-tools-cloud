@@ -6,7 +6,7 @@
   debug: var=nuxeo_is_snapshot
 - name: Identify distribution repository
   set_fact:
-    nexus_repo: "{{'public-snapshots' if nuxeo_is_snapshot|bool else 'public-releases'}}"
+    nexus_repo: "{{nexus_repository if nexus_repository is defined else 'public-snapshots' if nuxeo_is_snapshot|bool else 'public-releases'}}"
   when: nuxeo_distribution is not defined
 - name: Identify distribution URL
   set_fact:

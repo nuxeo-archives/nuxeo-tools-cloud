@@ -1,6 +1,7 @@
 ---
 nuxeo_version: 8.1-SNAPSHOT
 nexus_url: "http://maven.in.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=%s&g=org.nuxeo.ecm.distribution&a=nuxeo-distribution-tomcat&v=%s&e=zip&c=nuxeo-cap"
+nexus_repository: daily-snapshots
 update_snapshots: true
 reset_data: true
 enable_cors: true
