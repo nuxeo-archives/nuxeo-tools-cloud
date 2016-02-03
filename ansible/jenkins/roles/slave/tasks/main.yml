@@ -180,8 +180,10 @@
 # use https://qa.nuxeo.org/jenkins/plugin/ec2/AMI-Scripts/ubuntu-ami-setup.sh once ec2 plugin upgraded
   get_url: url=https://github.com/jenkinsci/ec2-plugin/raw/master/src/main/webapp/AMI-Scripts/ubuntu-init.py
            dest=/usr/bin/userdata mode=0750
+  when: "'docker' not in group_names and 'local' not in group_names"
 - lineinfile: dest=/etc/rc.local backup=true state=present
               regexp='^python /usr/bin/userdata$' line='python /usr/bin/userdata' insertbefore='^exit 0'
+  when: "'docker' not in group_names and 'local' not in group_names"
 - lineinfile: dest=/etc/rc.local backup=true state=present
               regexp='^.*use_mnt.sh.*$' line='/opt/jenkins/use_mnt.sh || true' insertbefore='^python /usr/bin/userdata'
   when: "'aws' in group_names"
