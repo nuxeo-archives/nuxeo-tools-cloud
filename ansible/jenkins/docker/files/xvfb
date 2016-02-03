@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+exec /sbin/setuser jenkins /usr/bin/Xvfb :1 -ac -screen 0 1280x1024x16
+

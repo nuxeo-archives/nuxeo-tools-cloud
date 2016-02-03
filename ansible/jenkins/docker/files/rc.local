@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+mkdir -p /home/ubuntu/.ssh
+chmod -R og-rwx /home/ubuntu/.ssh
+chown -R ubuntu:ubuntu /home/ubuntu/.ssh
+
+if [ -d /opt/jenkins/workspace ]; then
+    chown jenkins:jenkins /opt/jenkins/workspace
+fi
+
