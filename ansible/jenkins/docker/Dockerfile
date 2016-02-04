@@ -27,6 +27,10 @@ RUN mkdir /etc/service/redis
 ADD files/redis /etc/service/redis/run
 RUN chmod +x /etc/service/redis/run
 
+# Add sudoer user
+RUN useradd -d /home/ubuntu -m -s /bin/bash ubuntu
+RUN echo "\nubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
 # Add jenkins user
 RUN useradd -d /opt/jenkins -m -s /bin/bash jenkins
 
@@ -41,10 +45,6 @@ RUN chmod +x /etc/service/x11vnc/run
 RUN mkdir /etc/service/fluxbox
 ADD files/fluxbox /etc/service/fluxbox/run
 RUN chmod +x /etc/service/fluxbox/run
-
-# Add sudoer user
-RUN useradd -d /home/ubuntu -m -s /bin/bash ubuntu
-RUN echo "\nubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 RUN mkdir /home/ubuntu/.ssh
 ADD files/id_rsa.pub /home/ubuntu/.ssh/authorized_keys
