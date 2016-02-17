@@ -1,0 +1,12 @@
+---
+- name: Get the MongoDB public key
+  apt_key: url=https://www.mongodb.org/static/pgp/server-3.2.asc state=present validate_certs=False
+- name: Set up the location of the stable repository
+  copy: src=mongodb-org-3.2.list dest=/etc/apt/sources.list.d/mongodb-org-3.2.list
+- name: Update apt cache
+  apt: update_cache=yes
+- name: Install MongoDB client
+  apt: name={{item}} state=present
+  with_items:
+  - mongodb-org-shell
+  - mongodb-org-tools

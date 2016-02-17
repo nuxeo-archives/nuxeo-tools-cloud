@@ -246,6 +246,10 @@
 - include: dart.yml
   tags: dart
 
+# MongoDB client
+- include: mongodb.yml
+  tags: mongodb
+
 # slave.jar
 - name: Install current slave.jar
   file: path=/opt/jenkins/bin state=directory owner=jenkins group=jenkins
