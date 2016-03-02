@@ -250,17 +250,7 @@
 - include: mongodb.yml
   tags: mongodb
 
-# slave.jar
-- name: Install current slave.jar
-  file: path=/opt/jenkins/bin state=directory owner=jenkins group=jenkins
-- get_url: url=http://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
-           dest=/opt/jenkins/bin/slave.jar
-  sudo_user: jenkins
-- name: Install startup wrapper
-  copy: src=start_slave.sh dest=/opt/jenkins/start_slave.sh
-        mode=0755 owner=jenkins group=jenkins
-  when: "'docker' in group_names and 'multidb' in group_names"
-
+# Redis
 - name: Upgrade/install Redis packages
   apt: state=latest name={{item}}
   with_items:
@@ -268,6 +258,26 @@
   - redis-tools
   tags: redis
 
+# slave.jar
+- name: Install current slave.jar
+  file: path=/opt/jenkins/bin state=directory owner=jenkins group=jenkins
+- get_url: url=http://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
+           dest=/opt/jenkins/bin/slave.jar
+  sudo_user: jenkins
+#- name: Install startup wrapper
+#  copy: src=start_slave.sh dest=/opt/jenkins/start_slave.sh
+#        mode=0755 owner=jenkins group=jenkins
+#  when: "'docker' in group_names and 'multidb' in group_names"
+
 - name: Create nuxeo-test-vcs.properties (NXP-17267)
   file: path=/opt/jenkins/nuxeo-test-vcs.properties owner=jenkins group=jenkins state=touch
+
+# Docker environment
+- name: Check for custom init system
+  stat: path=/etc/my_init.d
+  register: myinitd
+- name: Install environment setup file
+  copy: src=10_setup_environment.sh dest=/etc/my_init.d/10_setup_environment.sh
+        mode=0755 owner=root group=root
+  when: myinitd.stat.exists
 

@@ -57,6 +57,8 @@ RUN rm -f /etc/service/sshd/down
 
 EXPOSE 22
 
+RUN touch /etc/service/cron/down
+
 ADD files/rc.local /etc/rc.local
 RUN chmod +x /etc/rc.local
 
