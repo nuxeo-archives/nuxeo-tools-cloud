@@ -145,3 +145,13 @@ if [ ! -f /etc/container_environment/NX_PGSQL_DB_PORT ]; then
     echo "NX_PGSQL_DB_PORT=5432" >> /etc/environment
 fi
 
+
+if [ ! -f /etc/container_environment/NX_MONGODB_SERVER ]; then
+    echo ${HOST_IP} >> /etc/container_environment/NX_MONGODB_SERVER
+    echo "NX_MONGODB_SERVER=${HOST_IP}" >> /etc/environment
+fi
+if [ ! -f /etc/container_environment/NX_MONGODB_DBNAME ]; then
+    echo db${SLAVE_NAME} >> /etc/container_environment/NX_MONGODB_DBNAME
+    echo "NX_MONGODB_DBNAME=db${SLAVE_NAME}" >> /etc/environment
+fi
+
