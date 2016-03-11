@@ -280,4 +280,8 @@
   copy: src=10_setup_environment.sh dest=/etc/my_init.d/10_setup_environment.sh
         mode=0755 owner=root group=root
   when: myinitd.stat.exists
+- name: Install slave.jar download script
+  copy: src=20_update_slave_jar.sh dest=/etc/my_init.d/20_update_slave_jar.sh
+        mode=0755 owner=root group=root
+  when: myinitd.stat.exists
 
