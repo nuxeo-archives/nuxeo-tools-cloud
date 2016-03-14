@@ -94,7 +94,7 @@ if [ ! -f /etc/container_environment/NX_ORACLE11G_DB_ADMINUSER ]; then
 fi
 if [ ! -f /etc/container_environment/NX_ORACLE11G_DB_NAME ]; then
     echo nuxeo >> /etc/container_environment/NX_ORACLE11G_DB_NAME
-    echo "NX_ORACLE11G_DB_NAME=nxueo" >> /etc/environment
+    echo "NX_ORACLE11G_DB_NAME=nuxeo" >> /etc/environment
 fi
 if [ ! -f /etc/container_environment/NX_ORACLE11G_DB_PORT ]; then
     echo 1520 >> /etc/container_environment/NX_ORACLE11G_DB_PORT
