@@ -211,8 +211,8 @@
 - include: nodejs.yml
   when: node_path.stat.exists == false
   tags: nodejs
-- name: Install npm 2.7.0
-  npm: name=npm version=2.7.0 global=yes
+- name: Install npm 2.15.1
+  npm: name=npm version=2.15.1 global=yes
   tags: nodejs
 - name: Install node dependencies
   npm: name={{item.name}} version={{item.version}} global=yes state=latest
