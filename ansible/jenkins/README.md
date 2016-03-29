@@ -103,7 +103,7 @@ Launch an instance:
  - associate the key pair
  - set 'default' security group (it's preconfigured to fit requirements)
 
-Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/production`.
+Copy its public hostname into `nuxeo-tools-cloud/ansible/jenkins/inventory/production/hosts` under `[aws_ondemand]`.
 
 Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 
