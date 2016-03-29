@@ -114,6 +114,7 @@ Issue from `nuxeo-tools-cloud/ansible/jenkins/`:
 Select the "Jenkins slave template <DATE>" instance on AWS interface and click "Action / Create Image (EBS AMI)".
 
 Set "`Jenkins_AMI_<DATE>_slave`" as name.
+Set "`Size (GiB)`" to `50`.
 
 Browse https://console.aws.amazon.com/ec2/v2/home?region=eu-west-1#Images
 
