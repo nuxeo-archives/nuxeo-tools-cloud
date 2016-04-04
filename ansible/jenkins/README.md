@@ -62,12 +62,6 @@ Generate an Ubuntu image for use by Jenkins as a slave.
  - current user must be member of the hudson group
  - gargantua:/volume1/Build mounted to /opt/build
 
-For docker tests:
-
- - current user must be in docker group (to invoke docker commands)
- - docker-py must be installed (pip install docker-py)
-
-
 ## Generate/update image
 
 Prod:
@@ -79,10 +73,6 @@ Testing:
     ansible-playbook -i inventory/stage/hosts slave.yml -v -c local [--ask-sudo-pass]
     ansible-playbook -i inventory/stage/hosts slave.yml [-K]
     ansible-playbook playbook.yml --list-hosts
-
-Docker test:
-
-    ansible-playbook -i inventory/docker/hosts docker.yml -v
 
 ## Complete procedure with Jenkins
 
