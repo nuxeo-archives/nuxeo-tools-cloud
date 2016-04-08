@@ -1,0 +1,10 @@
+---
+- name: NodeJS LTS
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/node-v4.4.2-linux-x64.tar.xz mode=geturl
+  changed_when: false
+  failed_when: false
+  register: nodejs
+- get_url: url=https://nodejs.org/dist/v4.4.2/node-v4.4.2-linux-x64.tar.xz
+           dest=cache/node-v4.4.2-linux-x64.tar.xz
+  when: nodejs.url is not defined
+

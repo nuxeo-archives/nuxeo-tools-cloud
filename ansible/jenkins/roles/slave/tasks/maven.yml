@@ -1,48 +1,77 @@
 ---
-- name: Maven 2.x
-  get_url: url=http://archive.apache.org/dist/maven/binaries/apache-maven-2.2.1-bin.tar.gz
-           dest=/tmp/apache-maven-2.2.1-bin.tar.gz
-- command: creates=/opt/build/tools/maven2 chdir=/opt/build/tools
-           tar zxvf /tmp/apache-maven-2.2.1-bin.tar.gz
+
+- name: Check for maven 2.x
+  stat: path=/opt/build/tools/apache-maven-2.2.1
+  register: maven2x_installed
+- name: Get maven 2.x package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/apache-maven-2.2.1-bin.tar.gz dest=/tmp/apache-maven-2.2.1-bin.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not maven2x_installed.stat.exists
+- name: Install maven 2.x
+  unarchive: src=/tmp/apache-maven-2.2.1-bin.tar.gz dest=/opt/build/tools copy=no
+  when: not maven2x_installed.stat.exists
 - file: src=/opt/build/tools/apache-maven-2.2.1 path=/opt/build/tools/maven2 state=link
 - file: path=/tmp/apache-maven-2.2.1-bin.tar.gz state=absent
 
-- name: Maven 3.0.x
-  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz
-           dest=/tmp/apache-maven-3.0.5-bin.tar.gz
-- command: creates=/opt/build/tools/maven3.0 chdir=/opt/build/tools
-           tar zxvf /tmp/apache-maven-3.0.5-bin.tar.gz
+- name: Check for maven 3.0.x
+  stat: path=/opt/build/tools/apache-maven-3.0.5
+  register: maven30x_installed
+- name: Get maven 3.0.x package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/apache-maven-3.0.5-bin.tar.gz dest=/tmp/apache-maven-3.0.5-bin.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not maven30x_installed.stat.exists
+- name: Install maven 3.0.x
+  unarchive: src=/tmp/apache-maven-3.0.5-bin.tar.gz dest=/opt/build/tools copy=no
+  when: not maven30x_installed.stat.exists
 - file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven3.0 state=link
-- file: src=/opt/build/tools/apache-maven-3.0.5 path=/opt/build/tools/maven-3.0 state=link
 - file: path=/tmp/apache-maven-3.0.5-bin.tar.gz state=absent
 
-- name: Maven 3.1.x
-  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.1.1/binaries/apache-maven-3.1.1-bin.tar.gz
-           dest=/tmp/apache-maven-3.1.1-bin.tar.gz
-- command: creates=/opt/build/tools/maven3.1 chdir=/opt/build/tools
-           tar zxvf /tmp/apache-maven-3.1.1-bin.tar.gz
+- name: Check for maven 3.1.x
+  stat: path=/opt/build/tools/apache-maven-3.1.1
+  register: maven31x_installed
+- name: Get maven 3.1.x package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/apache-maven-3.1.1-bin.tar.gz dest=/tmp/apache-maven-3.1.1-bin.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not maven31x_installed.stat.exists
+- name: Install maven 3.1.x
+  unarchive: src=/tmp/apache-maven-3.1.1-bin.tar.gz dest=/opt/build/tools copy=no
+  when: not maven31x_installed.stat.exists
 - file: src=/opt/build/tools/apache-maven-3.1.1 path=/opt/build/tools/maven3.1 state=link
-- file: src=/opt/build/tools/apache-maven-3.1.1 path=/opt/build/tools/maven-3.1 state=link
 - file: path=/tmp/apache-maven-3.1.1-bin.tar.gz state=absent
 
-- name: Maven 3.2.x
-  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
-           dest=/tmp/apache-maven-3.2.5-bin.tar.gz
-- command: creates=/opt/build/tools/apache-maven3.2.5 chdir=/opt/build/tools
-           tar zxvf /tmp/apache-maven-3.2.5-bin.tar.gz
+- name: Check for maven 3.2.x
+  stat: path=/opt/build/tools/apache-maven-3.2.5
+  register: maven32x_installed
+- name: Get maven 3.2.x package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/apache-maven-3.2.5-bin.tar.gz dest=/tmp/apache-maven-3.2.5-bin.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not maven32x_installed.stat.exists
+- name: Install maven 3.2.x
+  unarchive: src=/tmp/apache-maven-3.2.5-bin.tar.gz dest=/opt/build/tools copy=no
+  when: not maven32x_installed.stat.exists
 - file: src=/opt/build/tools/apache-maven-3.2.5 path=/opt/build/tools/maven3.2 state=link
-- file: src=/opt/build/tools/apache-maven-3.2.5 path=/opt/build/tools/maven-3.2 state=link
 - file: path=/tmp/apache-maven-3.2.5-bin.tar.gz state=absent
 
-- name: Maven 3.3.x
-  get_url: url=http://www.us.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
-           dest=/tmp/apache-maven-3.3.3-bin.tar.gz
-- command: creates=/opt/build/tools/apache-maven3.3.3 chdir=/opt/build/tools
-           tar zxvf /tmp/apache-maven-3.3.3-bin.tar.gz
+- name: Check for maven 3.3.x
+  stat: path=/opt/build/tools/apache-maven-3.3.3
+  register: maven33x_installed
+- name: Get maven 3.3.x package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/apache-maven-3.3.3-bin.tar.gz dest=/tmp/apache-maven-3.3.3-bin.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not maven33x_installed.stat.exists
+- name: Install maven 3.3.x
+  unarchive: src=/tmp/apache-maven-3.3.3-bin.tar.gz dest=/opt/build/tools copy=no
+  when: not maven33x_installed.stat.exists
 - file: src=/opt/build/tools/apache-maven-3.3.3 path=/opt/build/tools/maven3.3 state=link
-- file: src=/opt/build/tools/apache-maven-3.3.3 path=/opt/build/tools/maven-3.3 state=link
-- file: src=/opt/build/tools/maven3.3 path=/opt/build/tools/maven3 state=link
 - file: path=/tmp/apache-maven-3.3.3-bin.tar.gz state=absent
+
+
+- file: src=/opt/build/tools/maven3.3 path=/opt/build/tools/maven3 state=link
 
 - alternatives: name=mvn link=/usr/bin/mvn path=/opt/build/tools/maven3/bin/mvn
 

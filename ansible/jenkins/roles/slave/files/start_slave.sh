@@ -1,7 +1,5 @@
 #!/bin/bash
 
-sudo bash -c 'echo "54.217.213.210 maven.in.nuxeo.com" >> /etc/hosts'
-
 SLAVE_NAME=$(hostname)
 HOST_IP=$(ip route show | grep '^default' | awk '{print $3}')
 

@@ -1,23 +1,16 @@
 ---
 # file: roles/slave/tasks/nodejs.yml
 
-- name: Download nodejs
-  get_url: url=http://nodejs.org/dist/v{{node_version}}/node-v{{node_version}}.tar.gz dest=/tmp/node.tar.gz
-- name: Create /usr/local/src
-  file: path=/usr/local/src state=directory
-- name: Uncompress nodejs
-  shell: tar -C /usr/local/src -xzf /tmp/node.tar.gz
-- name: Configure nodejs
-  shell: ./configure
-    chdir=/usr/local/src/node-v{{node_version}}
-- name: Build nodejs
-  shell: make
-    chdir=/usr/local/src/node-v{{node_version}}
-- name: Install nodejs
-  shell: make install
-    chdir=/usr/local/src/node-v{{node_version}}
-- name: Cleanup nodejs download
-  file: path=/tmp/node.tar.gz state=absent
-- name: Cleanup nodejs build directory
-  file: path=/usr/local/src/node-v{{node_version}} state=absent
+- name: Get Node package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/node-v4.4.2-linux-x64.tar.xz dest=/tmp/node-v4.4.2-linux-x64.tar.xz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+- name: Install Node
+  unarchive: src=/tmp/node-v4.4.2-linux-x64.tar.xz dest=/opt/build/tools copy=no
+- file: path=/tmp/node-v4.4.2-linux-x64.tar.xz state=absent
+
+- name: Add node symlink
+  file: path=/usr/local/bin/node src=/opt/build/tools/node-v4.4.2-linux-x64/bin/node state=link
+- name: Add npm symlink
+  file: path=/usr/local/bin/npm src=/opt/build/tools/node-v4.4.2-linux-x64/bin/npm state=link
 

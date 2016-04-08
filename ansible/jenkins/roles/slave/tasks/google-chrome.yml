@@ -4,12 +4,14 @@
 - stat: path=/etc/apt/sources.list.d/google-chrome.list
   register: google_apt_rc
 - name: Add Google Chrome stable repo
-  copy: content="deb http://dl.google.com/linux/chrome/deb/ stable main" dest=/etc/apt/sources.list.d/google-chrome.list
+  copy: content="deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" dest=/etc/apt/sources.list.d/google-chrome.list
   when: google_apt_rc.stat.exists == false
 - name: Update apt cache
   apt: update_cache=yes
+  when: google_apt_rc.stat.exists == false
 - name: Install Google Chrome
-  apt: pkg=google-chrome-stable state=installed
+  apt: pkg=google-chrome-stable state=latest
+  when: google_apt_rc.stat.exists == false
 - name: Install ChromeDriver 2.16
   get_url: url=http://chromedriver.storage.googleapis.com/2.16/chromedriver_linux64.zip
            dest=/tmp/chromedriver_linux64.zip

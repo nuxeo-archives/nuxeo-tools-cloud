@@ -1,7 +1,4 @@
 ---
-node_version: "4.2.4"
-m2_settings_file: /opt/build/hudson/m2remote/settings.xml
 s3_region: eu-west-1
 s3_bucket: nuxeo-jenkins-resources
 s3_path: packages/linux
-

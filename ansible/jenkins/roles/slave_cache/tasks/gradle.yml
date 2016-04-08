@@ -1,0 +1,10 @@
+---
+- name: Gradle 1.6
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/gradle-1.6-bin.zip mode=geturl
+  changed_when: false
+  failed_when: false
+  register: gradle16
+- get_url: url=http://services.gradle.org/distributions/gradle-1.6-bin.zip
+           dest=cache/gradle-1.6-bin.zip
+  when: gradle16.url is not defined
+

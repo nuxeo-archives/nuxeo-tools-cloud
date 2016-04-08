@@ -1,9 +1,14 @@
 ---
-# file: slave.yml
+- hosts: localhost
+  gather_facts: no
+  become: no
+  roles:
+  - slave_cache
+
 - hosts: all
   gather_facts: no
   user: ubuntu
-  sudo: yes
+  become: yes
   roles:
   - slave
 

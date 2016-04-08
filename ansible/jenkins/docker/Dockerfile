@@ -5,9 +5,9 @@
 FROM       phusion/baseimage:0.9.18
 MAINTAINER Nuxeo Packagers <packagers@nuxeo.com>
 
-RUN echo "deb http://netboot.in.nuxeo.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list
-RUN echo "deb http://netboot.in.nuxeo.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
-RUN echo "deb http://netboot.in.nuxeo.com/ubuntu-security/ trusty-security main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb http://ubuntu.mirrors.ovh.net/ftp.ubuntu.com/ubuntu/ trusty main restricted universe multiverse" > /etc/apt/sources.list
+RUN echo "deb http://ubuntu.mirrors.ovh.net/ftp.ubuntu.com/ubuntu/ trusty-updates main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb http://security.ubuntu.com/ubuntu trusty-security main restricted universe multiverse" >> /etc/apt/sources.list
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update || true
 RUN apt-get -q -y dist-upgrade

@@ -1,17 +1,19 @@
 ---
-- name: Download JDK 8
-  command: "wget -q -O/tmp/jdk-8-linux-x64.tgz --no-check-certificate --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.tar.gz'"
-  args:
-    creates: /usr/lib/jvm/jdk1.8.0_60
+- name: Check for Java 8
+  stat: path=/usr/lib/jvm/jdk1.8.0_77
+  register: java8_installed
+- name: Get Java8 package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/jdk-8u77-linux-x64.tar.gz dest=/tmp/jdk-8-linux-x64.tar.gz mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not java8_installed.stat.exists
 - name: Install JDK 8
-  command: tar xzf /tmp/jdk-8-linux-x64.tgz
-  args:
-    creates: /usr/lib/jvm/jdk1.8.0_60
-    chdir: /usr/lib/jvm
-  register: extracted_java8
-- name: Remove JDK 8 archive
-  file: path=/tmp/jdk-8-linux-x64.tgz state=absent
+  unarchive: src=/tmp/jdk-8-linux-x64.tar.gz dest=/usr/lib/jvm copy=no
+  when: not java8_installed.stat.exists
 - name: Create JDK 8 symlink
-  file: src=/usr/lib/jvm/jdk1.8.0_60 path=/usr/lib/jvm/java-8 state=link force=yes
-  when: extracted_java8.changed
-
+  file: src=/usr/lib/jvm/jdk1.8.0_77 path=/usr/lib/jvm/java-8 state=link force=yes
+  when: not java8_installed.stat.exists
+- name: Install JDK 8 alternative
+  command: update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
+  when: not java8_installed.stat.exists
+- file: path=/tmp/jdk-8-linux-x64.tgz state=absent

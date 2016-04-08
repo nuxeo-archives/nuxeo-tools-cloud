@@ -1,0 +1,28 @@
+---
+- name: Firefox 24
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/firefox-24.0.tar.bz2 mode=geturl
+  changed_when: false
+  failed_when: false
+  register: firefox24
+- get_url: url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/24.0/linux-x86_64/en-US/firefox-24.0.tar.bz2
+           dest=cache/firefox-24.0.tar.bz2
+  when: firefox24.url is not defined
+
+- name: Firefox 26
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/firefox-26.0.tar.bz2 mode=geturl
+  changed_when: false
+  failed_when: false
+  register: firefox26
+- get_url: url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/26.0/linux-x86_64/en-US/firefox-26.0.tar.bz2
+           dest=cache/firefox-26.0.tar.bz2
+  when: firefox26.url is not defined
+
+- name: Firefox 42
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/firefox-42.0.tar.bz2 mode=geturl
+  changed_when: false
+  failed_when: false
+  register: firefox42
+- get_url: url=https://ftp.mozilla.org/pub/mozilla.org/firefox/releases/42.0/linux-x86_64/en-US/firefox-42.0.tar.bz2
+           dest=cache/firefox-42.0.tar.bz2
+  when: firefox42.url is not defined
+

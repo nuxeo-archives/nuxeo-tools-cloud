@@ -1,14 +1,22 @@
 ---
-- name: Download JDK 6
-  get_url: url="http://javadl.sun.com/webapps/download/AutoDL?BundleId=63975"
-       dest=/tmp/jdk-6-linux-x64.bin
-- name: Install JDK 6
-  command: creates=/usr/lib/jvm/jdk1.6.0_33 chdir=/usr/lib/jvm
-           sh /tmp/jdk-6-linux-x64.bin -noregister
-  register: extracted_java6
-- name: Remove JDK 6 archive
-  file: path=/tmp/jdk-6-linux-x64.bin state=absent
-- name: Create JDK 6 symlink
-  file: src=/usr/lib/jvm/jdk1.6.0_33 path=/usr/lib/jvm/java-6-sun state=link
-  when: extracted_java6.changed
+- name: Check for Java 6
+  stat: path=/usr/lib/jvm/jdk1.6.0_45
+  register: java6_installed
+- name: Get Java6 package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/jdk-6u45-linux-x64.bin dest=/tmp/jdk-6-linux-x64.bin mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not java6_installed.stat.exists
+- name: Install Java 6
+  command: sh /tmp/jdk-6-linux-x64.bin -noregister
+  args:
+    chdir: /usr/lib/jvm
+  when: not java6_installed.stat.exists
+- name: Create Java 6 symlink
+  file: src=/usr/lib/jvm/jdk1.6.0_45 path=/usr/lib/jvm/java-6-sun state=link
+  when: not java6_installed.stat.exists
+- name: Install JDK 6 alternative
+  command: update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-6-sun/jre/bin/java 1062
+  when: not java6_installed.stat.exists
+- file: path=/tmp/jdk-6-linux-x64.bin state=absent
 

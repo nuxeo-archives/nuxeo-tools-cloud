@@ -4,56 +4,8 @@ Generate an Ubuntu image for use by Jenkins as a slave.
 
 ## Requirements
 
- - ansible 1.8.2 or later + https://github.com/stansonhealth/ansible-modules-core/commit/250acf0e76d9858595d3f35ea3bfa8e06f6c958e
-
-=> apply the following patch on ansible/modules/core/packaging/os/apt.py:
-
-    247,251c247,253
-    <     for pkgspec_pattern in pkgspec:
-    <         pkgname_pattern, version = package_split(pkgspec_pattern)
-    <
-    <         # note that none of these chars is allowed in a (debian) pkgname
-    <         if frozenset('*?[]!').intersection(pkgname_pattern):
-    ---
-    >     for pkgname_or_fnmatch_pattern in pkgspec:
-    >         # note that any of these chars is not allowed in a (debian) pkgname
-    >         if [c for c in pkgname_or_fnmatch_pattern if c in "*?[]!"]:
-    >             if "=" in pkgname_or_fnmatch_pattern:
-    >                 pkgname_or_fnmatch_pattern, version_pattern = pkgname_or_fnmatch_pattern.split('=')
-    >             else:
-    >                 version_pattern = None
-    254,258c256,259
-    <             if not ":" in pkgname_pattern:
-    <                 try:
-    <                     pkg_name_cache = _non_multiarch
-    <                 except NameError:
-    <                     pkg_name_cache = _non_multiarch = [pkg.name for pkg in cache if not ':' in pkg.name]
-    ---
-    >             if not ":" in pkgname_or_fnmatch_pattern:
-    >                 matches = fnmatch.filter(
-    >                     [pkg.name for pkg in cache
-    >                      if not ":" in pkg.name], pkgname_or_fnmatch_pattern)
-    260,264c261,265
-    <                 try:
-    <                     pkg_name_cache = _all_pkg_names
-    <                 except NameError:
-    <                     pkg_name_cache = _all_pkg_names = [pkg.name for pkg in cache]
-    <             matches = fnmatch.filter(pkg_name_cache, pkgname_pattern)
-    ---
-    >                 matches = fnmatch.filter(
-    >                     [pkg.name for pkg in cache], pkgname_or_fnmatch_pattern)
-    >
-    >             if version_pattern is not None:
-    >                 matches = [ match+'='+version_pattern for match in matches ]
-    267c268
-    <                 m.fail_json(msg="No package(s) matching '%s' available" % str(pkgname_pattern))
-    ---
-    >                 m.fail_json(msg="No package(s) matching '%s' available" % str(pkgname_or_fnmatch_pattern))
-    271,272c272
-    <             # No wildcards in name
-    <             new_pkgspec.append(pkgspec_pattern)
-    ---
-    >             new_pkgspec.append(pkgname_or_fnmatch_pattern)
+ - ansible 2.0 or later,
+ - a S3 bucket for the resources cache, and the credentials to access it in your environment.
 
  - existing nexus user and group with ID 1003
  - existing hudson user and group with ID 1005
@@ -131,3 +83,45 @@ You can ask for an image from https://qa.nuxeo.org/jenkins/computer/ with "Provi
 ### AWS cleanup
 
 Delete unused old AMIs. Delete unused associated "snapshot" volumes.
+
+### Docker image generation
+
+First build the nuxeo/jenkins-base image:
+Add your id\_rsa.pub in docker/files/id\_rsa.pub (so ansible can connect later) then:
+
+    cd docker
+    docker build -t nuxeo/jenkins-base .
+
+Run a container from that image, exporting the SSH port locally:
+
+    docker run -d -t -i -p 127.0.0.1:2222:22 --name=slavepub nuxeo/jenkins-base
+
+Make an inventory file for ansible to access this container:
+
+    [multidb:children]
+    docker
+
+    [docker:children]
+    slaves
+
+    [slaves]
+    pubcontainer ansible_ssh_port=2222 ansible_ssh_host=127.0.0.1
+
+Run ansible normally on this container:
+
+    ansible-playbook -i inventory/pubtmp/hosts slave.yml -v
+
+Commit this container:
+
+    docker commit slavepub nuxeo/jenkins-docker
+
+Tag the image for the remote registry:
+
+    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-docker
+
+Push the image:
+
+    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-docker
+
+You can then pull the image on the slaves hosts and restart the slaves containers with the new image.
+
