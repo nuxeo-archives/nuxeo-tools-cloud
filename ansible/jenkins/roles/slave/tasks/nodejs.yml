@@ -9,6 +9,10 @@
   unarchive: src=/tmp/node-v4.4.2-linux-x64.tar.xz dest=/opt/build/tools copy=no
 - file: path=/tmp/node-v4.4.2-linux-x64.tar.xz state=absent
 
+- name: Remove old global node
+  file: path=/usr/local/bin/node state=absent
+- name: Remove old global npm
+  file: path=/usr/local/bin/npm state=absent
 - name: Add node symlink
   file: path=/usr/local/bin/node src=/opt/build/tools/node-v4.4.2-linux-x64/bin/node state=link
 - name: Add npm symlink

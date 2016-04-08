@@ -201,6 +201,11 @@
   - name: bower
     version: 1.3.12
   tags: nodejs
+- name: Add symilnks
+  file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/yo path=/usr/local/bin/yo state=link
+- file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/grunt path=/usr/local/bin/grunt state=link
+- file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/gulp path=/usr/local/bin/gulp state=link
+- file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/bower path=/usr/local/bin/bower state=link
 
 # Dart
 - name: Check for dart
