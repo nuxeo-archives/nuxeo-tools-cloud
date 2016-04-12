@@ -1,0 +1,6 @@
+---
+- name: Set Firefox 24 as default
+  alternatives: name=firefox link=/usr/bin/firefox path=/opt/build/tools/firefox-24/firefox
+- copy: src=/opt/build/hudsonpriv/m2/settings.xml dest=/opt/jenkins/.m2/settings.xml
+        owner=jenkins group=jenkins
+

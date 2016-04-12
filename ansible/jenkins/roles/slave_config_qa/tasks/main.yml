@@ -1,0 +1,6 @@
+---
+- name: Set Firefox 26 as default
+  alternatives: name=firefox link=/usr/bin/firefox path=/opt/build/tools/firefox-26/firefox
+- copy: src=/opt/build/hudson/m2remote/settings.xml dest=/opt/jenkins/.m2/settings.xml
+        owner=jenkins group=jenkins
+

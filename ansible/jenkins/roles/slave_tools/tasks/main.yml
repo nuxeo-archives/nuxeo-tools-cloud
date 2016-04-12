@@ -73,6 +73,13 @@
   - libimage-exiftool-perl
   - libyaml-0-2
   - libyaml-dev
+  - phantomjs
+  - dpkg-dev
+  - debhelper
+  - lintian
+  - zip
+  - libc6-i386
+  - g++-multilib
   # Amazon S3
   - s3cmd
   # Funkload requirements
@@ -129,8 +136,6 @@
 # Firefox
 # Can't use APT which pulls unfixed FF version
 - include: firefox.yml
-- name: Set Firefox 26 as default
-  alternatives: name=firefox link=/usr/bin/firefox path=/opt/build/tools/firefox-26/firefox
 
 # Google Chrome
 - name: Check for Google Chrome
@@ -211,6 +216,7 @@
 - name: Check for dart
   stat: path=/usr/bin/dart
   register: dartinstalled
+  tags: dart
 - include: dart.yml
   when: not dartinstalled.stat.exists
   tags: dart
@@ -238,8 +244,23 @@
 - name: Install Azure CLI
   npm: name=azure-cli version=0.9.10 global=yes
   register: azure_install
+  tags: azure-cli
 - name: Add azure symlink
   file: path=/usr/local/bin/azure src=/opt/build/tools/node-v4.4.2-linux-x64/bin/azure state=link
+  tags: azure-cli
+
+# NSIS
+- include: nsis.yml
+  tags: nsis
+
+# Docker
+- name: Check for docker
+  stat: path=/usr/bin/docker
+  register: docker_installed
+  tags: docker
+- include: docker.yml
+  when: not docker_installed.stat.exists
+  tags: docker
 
 # slave.jar
 - name: Install current slave.jar
@@ -260,66 +281,4 @@
   copy: src=20_update_slave_jar.sh dest=/etc/my_init.d/20_update_slave_jar.sh
         mode=0755 owner=root group=root
   when: myinitd.stat.exists
-
-# Slave settings
-- file: path=/opt/jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
-- authorized_key: user=jenkins key="{{item}}"
-  with_file:
-  - jenkins_id_rsa.pub
-  - Jenkins_aws_system.pem.pub
-- authorized_key: user=jenkins key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
-- copy: src=91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
-        mode=440 owner=root group=root
-- copy: src=~/.ssh/jenkins_id_rsa dest=/opt/jenkins/.ssh/id_rsa
-        owner=jenkins group=jenkins mode=600 backup=no
-- copy: src=jenkins_id_rsa.pub dest=/opt/jenkins/.ssh/id_rsa.pub
-        owner=jenkins group=jenkins mode=600 backup=no
-- copy: src=jenkins_ssh_config dest=/opt/jenkins/.ssh/config
-        owner=jenkins group=jenkins mode=600 backup=no
-- file: path=/opt/jenkins/.m2 state=directory owner=jenkins group=jenkins
-- copy: src={{m2_settings_file}} dest=/opt/jenkins/.m2/settings.xml
-        owner=jenkins group=jenkins
-- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
-        owner=jenkins group=jenkins
-  when: "'aws' in group_names"
-- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
-        owner=jenkins group=jenkins
-  when: "'aws' not in group_names"
-- copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
-        owner=jenkins group=jenkins backup=no
-- copy: src=/opt/build/hudson/.bashrc dest=/opt/jenkins/.bashrc
-        owner=jenkins group=jenkins backup=no
-  when: "'aws' in group_names"
-- copy: src=/opt/build/hudson/.netrc dest=/opt/jenkins/.netrc
-        owner=jenkins group=jenkins mode=600 backup=no
-- copy: src=/opt/build/hudson/.s3cfg dest=/opt/jenkins/.s3cfg
-        owner=jenkins group=jenkins mode=600 backup=no
-
-- name: Git config
-  # should be backup=yes but create=true option is missing on ini_file
-  ini_file: dest=/opt/jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
-            section=user option=name value="Jenkins Nuxeo"
-- ini_file: dest=/opt/jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
-            section=user option=email value="jenkins@nuxeo.com"
-
-- copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
-        owner=jenkins group=jenkins
-- copy: src=/opt/build/hudson/instance.clid dest=/opt/build/hudson/instance.clid
-        owner=jenkins group=jenkins
-- copy: src=use_mnt_ondemand.sh dest=/opt/jenkins/use_mnt.sh
-        mode=755 owner=jenkins group=jenkins
-  when: "'aws_ondemand' in group_names"
-
-- synchronize: src=/opt/build/keystores dest=/opt/build/ owner=no group=no delete=yes recursive=yes rsync_path="sudo -u jenkins rsync"
-  become_user: jenkins
-  register: keystore_sync
-- shell: chown -R jenkins:jenkins /opt/build/keystores
-  when: keystore_sync.changed
-- name: Kerberos krb5.conf
-  copy: src=/opt/build/keystores/keytabs/krb5.conf dest=/etc/krb5.conf
-
-- name: Setup Azure CLI
-  shell: azure account import /opt/build/keystores/azure.nuxeo.com.publishsettings
-  become_user: jenkins
-  when: azure_install.changed
 

@@ -94,7 +94,7 @@ Add your id\_rsa.pub in docker/files/id\_rsa.pub (so ansible can connect later) 
 
 Run a container from that image, exporting the SSH port locally:
 
-    docker run -d -t -i -p 127.0.0.1:2222:22 --name=slavepub nuxeo/jenkins-base
+    docker run -d -t -i -p 127.0.0.1:2222:22 --name=slave nuxeo/jenkins-base
 
 Make an inventory file for ansible to access this container:
 
@@ -105,15 +105,15 @@ Make an inventory file for ansible to access this container:
     slaves
 
     [slaves]
-    pubcontainer ansible_ssh_port=2222 ansible_ssh_host=127.0.0.1
+    container ansible_ssh_port=2222 ansible_ssh_host=127.0.0.1
 
 Run ansible normally on this container:
 
-    ansible-playbook -i inventory/pubtmp/hosts slave.yml -v
+    ansible-playbook -i inventory/slavetmp/hosts slave.yml -v
 
 Commit this container:
 
-    docker commit slavepub nuxeo/jenkins-docker
+    docker commit slave nuxeo/jenkins-docker
 
 Tag the image for the remote registry:
 
