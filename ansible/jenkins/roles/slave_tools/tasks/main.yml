@@ -73,7 +73,6 @@
   - libimage-exiftool-perl
   - libyaml-0-2
   - libyaml-dev
-  - phantomjs
   - dpkg-dev
   - debhelper
   - lintian
@@ -211,6 +210,9 @@
 - file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/grunt path=/usr/local/bin/grunt state=link
 - file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/gulp path=/usr/local/bin/gulp state=link
 - file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/bower path=/usr/local/bin/bower state=link
+
+- include: phantomjs.yml
+  tags: nodejs
 
 # Dart
 - name: Check for dart

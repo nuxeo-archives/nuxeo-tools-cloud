@@ -1,0 +1,17 @@
+---
+- name: Check phantomjs system package is absent
+  apt: name=phantomjs state=absent
+- name: Check for phantomjs 1.9.8
+  stat: path=/opt/build/tools/phantomjs-1.9.8-linux-x86_64
+  register: phantomjs_installed
+- name: Get phantomjs 1.9.8 package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/phantomjs-1.9.8-linux-x86_64.tar.bz2 dest=/tmp/phantomjs-1.9.8-linux-x86_64.tar.bz2 mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: not phantomjs_installed.stat.exists
+- name: Install phantomjs 1.9.8
+  unarchive: src=/tmp/phantomjs-1.9.8-linux-x86_64.tar.bz2 dest=/opt/build/tools copy=no
+  when: not phantomjs_installed.stat.exists
+- file: src=/opt/build/tools/phantomjs-1.9.8-linux-x86_64/bin/phantomjs path=/usr/local/bin/phantomjs state=link
+- file: path=/tmp/phantomjs-1.9.8-linux-x86_64.tar.bz2 state=absent
+

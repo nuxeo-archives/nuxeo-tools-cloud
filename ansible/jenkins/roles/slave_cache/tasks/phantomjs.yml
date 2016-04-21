@@ -1,0 +1,10 @@
+---
+- name: PhantomJS
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/phantomjs-1.9.8-linux-x86_64.tar.bz2 mode=geturl
+  changed_when: false
+  failed_when: false
+  register: phantomjs
+- get_url: url=https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-1.9.8-linux-x86_64.tar.bz2
+           dest=cache/phantomjs-1.9.8-linux-x86_64.tar.bz2
+  when: phantomjs.url is not defined
+
