@@ -118,14 +118,11 @@
   register: ffmpegcheck
   failed_when: ffmpegcheck.rc > 1
   changed_when: false
-- name: Get ffmpeg package URL
-  s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/ffmpeg-nuxeo_2.8.5-1_amd64.deb mode=geturl
-      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
-  register: ffmpegurl
-  when: ffmpegcheck.rc == 1
 - name: Get ffmpeg package
-  get_url: url={{ffmpegurl.url}} dest=/tmp/ffmpeg-nuxeo_2.8.5-1_amd64.deb
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/ffmpeg-nuxeo_2.8.5-1_amd64.deb
+      dest=/tmp/ffmpeg-nuxeo_2.8.5-1_amd64.deb mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: ffmpegcheck.rc == 1
 - name: Install ffmpeg
   command: dpkg -i /tmp/ffmpeg-nuxeo_2.8.5-1_amd64.deb
@@ -204,6 +201,8 @@
     version: 3.8.11
   - name: bower
     version: 1.3.12
+  - name: unicode
+    version: 0.6.1
   tags: nodejs
 - name: Add symilnks
   file: src=/opt/build/tools/node-v4.4.2-linux-x64/bin/yo path=/usr/local/bin/yo state=link
@@ -263,6 +262,23 @@
 - include: docker.yml
   when: not docker_installed.stat.exists
   tags: docker
+
+# libsass - replace with standard package when upgrading ubuntu
+- name: Check for libsass
+  command: dpkg-query -W libsass-nuxeo
+  register: libsasscheck
+  failed_when: libsasscheck.rc > 1
+  changed_when: false
+- name: Get libsass package
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_path}}/libsass-nuxeo_3.3.6-1_amd64.deb
+      dest=/tmp/libsass-nuxeo_3.3.6-1_amd64.deb mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
+  when: libsasscheck.rc == 1
+- name: Install libsass
+  command: dpkg -i /tmp/libsass-nuxeo_3.3.6-1_amd64.deb
+  when: libsasscheck.rc == 1
+- file: path=/tmp/libsass-nuxeo_3.3.6-1_amd64.deb state=absent
 
 # slave.jar
 - name: Install current slave.jar
