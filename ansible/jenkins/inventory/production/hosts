@@ -7,7 +7,7 @@ aws
 medusa.in.nuxeo.com
 
 [remote]
-kraken.nuxeo.com
+#kraken.nuxeo.com
 
 [aws:children]
 aws_ondemand
@@ -17,12 +17,4 @@ aws_static
 52.16.198.79
 
 [aws_static]
-linaws1.nuxeo.org
-linaws2.nuxeo.org
-linaws3.nuxeo.org
-linaws4.nuxeo.org
-linaws5.nuxeo.org
-linaws6.nuxeo.org
-gimli.nuxeo.org
-joyeux.nuxeo.org
 

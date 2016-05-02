@@ -79,6 +79,7 @@
   - zip
   - libc6-i386
   - g++-multilib
+  - libssl-dev
   # Amazon S3
   - s3cmd
   # Funkload requirements
