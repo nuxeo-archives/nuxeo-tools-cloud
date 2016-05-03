@@ -92,6 +92,9 @@ Add your id\_rsa.pub in docker/files/id\_rsa.pub (so ansible can connect later) 
     cd docker
     docker build -t nuxeo/jenkins-base .
 
+You should update that base image now and then to get package updates, that will make the ansible build faster.
+
+
 Run a container from that image, exporting the SSH port locally:
 
     docker run -d -t -i -p 127.0.0.1:2222:22 --name=slave nuxeo/jenkins-base
@@ -117,11 +120,15 @@ Commit this container:
 
 Tag the image for the remote registry:
 
-    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-docker
+    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-slave
+    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-ondemand
+    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-check
 
 Push the image:
 
-    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-docker
+    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-slave
+    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-ondemand
+    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-check
 
 You can then pull the image on the slaves hosts and restart the slaves containers with the new image.
 
