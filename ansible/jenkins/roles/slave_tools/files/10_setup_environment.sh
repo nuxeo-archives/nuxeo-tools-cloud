@@ -3,6 +3,11 @@
 SLAVE_NAME=$(hostname)
 HOST_IP=$(ip route show | grep '^default' | awk '{print $3}')
 
+
+echo ":1" > /etc/container_environment/DISPLAY
+echo "DISPLAY=:1" >>  /etc/environment
+
+
 # Add defined DB variables to environment
 for v in HOST PORT NAME USER PASS ADMINNAME ADMINUSER ADMINPASS; do
     var="NX_DB_$v"
