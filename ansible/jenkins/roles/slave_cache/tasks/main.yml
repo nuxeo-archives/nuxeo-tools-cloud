@@ -25,6 +25,7 @@
   command: aws s3 sync . s3://{{s3_bucket}}/{{s3_path}}/ --region={{s3_region}}
   args:
     chdir: cache
-  register: s3sync
-  changed_when: s3sync.stdout != ""
+  #register: s3sync
+  #changed_when: s3sync.stdout != ""
+  changed_when: false
 
