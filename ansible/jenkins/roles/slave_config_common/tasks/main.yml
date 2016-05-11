@@ -15,12 +15,17 @@
 - copy: src=jenkins_ssh_config dest=/opt/jenkins/.ssh/config
         owner=jenkins group=jenkins mode=600 backup=no
 - file: path=/opt/jenkins/.m2 state=directory owner=jenkins group=jenkins
-- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
-        owner=jenkins group=jenkins
+- name: Add m2 repo seed (aws)
+  synchronize: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
+        owner=true group=true
   when: "'aws' in group_names"
-- copy: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
-        owner=jenkins group=jenkins
+- name: Add m2 repo seed (docker)
+  synchronize: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
+        owner=true group=true
   when: "'aws' not in group_names"
+- name: Fix .m2 rights
+  command: chown -R jenkins:jenkins /opt/jenkins/.m2
+  changed_when: false
 - copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
         owner=jenkins group=jenkins backup=no
 - copy: src=/opt/build/hudson/.bashrc dest=/opt/jenkins/.bashrc
