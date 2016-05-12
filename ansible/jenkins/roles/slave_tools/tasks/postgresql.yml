@@ -1,0 +1,6 @@
+---
+- name: Create PostgreSQL runit dir
+  file: path=/etc/service/postgresql state=directory
+- name: Add PostgreSQL startup script
+  copy: src=postgresql dest=/etc/service/postgresql/run mode=0755
+

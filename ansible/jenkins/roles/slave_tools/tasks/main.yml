@@ -302,3 +302,5 @@
         mode=0755 owner=root group=root
   when: myinitd.stat.exists
 
+- include: postgresql.yml
+

@@ -67,3 +67,13 @@
 - name: Add jenkins to docker group
   user: name=jenkins groups=docker append=yes
 
+- name: Start PostgreSQL
+  shell: sv up postgresql
+  changed_when: false
+- name: Add nxadmin user
+  script: create_pg_user.sh
+  changed_when: false
+- name: Stop PostgreSQL
+  shell: sv down postgresql
+  changed_when: false
+
