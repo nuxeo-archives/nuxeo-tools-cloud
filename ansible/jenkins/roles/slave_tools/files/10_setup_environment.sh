@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-SLAVE_NAME=$(hostname)
+SLAVE_NAME=$(hostname | tr -cd '[:alnum:]')
 HOST_IP=$(ip route show | grep '^default' | awk '{print $3}')
 
 
@@ -132,8 +132,8 @@ if [ ! -f /etc/container_environment/NX_PGSQL_DB_ADMINNAME ]; then
     echo "NX_PGSQL_DB_ADMINNAME=template1" >> /etc/environment
 fi
 if [ ! -f /etc/container_environment/NX_PGSQL_DB_ADMINPASS ]; then
-    echo nuxeospirit >> /etc/container_environment/NX_PGSQL_DB_ADMINPASS
-    echo "NX_PGSQL_DB_ADMINPASS=nuxeospirit" >> /etc/environment
+    echo nuxeo >> /etc/container_environment/NX_PGSQL_DB_ADMINPASS
+    echo "NX_PGSQL_DB_ADMINPASS=nuxeo" >> /etc/environment
 fi
 if [ ! -f /etc/container_environment/NX_PGSQL_DB_ADMINUSER ]; then
     echo nxadmin >> /etc/container_environment/NX_PGSQL_DB_ADMINUSER

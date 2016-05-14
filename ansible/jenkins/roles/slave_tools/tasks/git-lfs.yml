@@ -1,0 +1,11 @@
+---
+- name: Add git-lfs repo key
+  apt_key: url=https://packagecloud.io/gpg.key state=present
+- name: Add git-lfs repo
+  copy: src=git-lfs.list dest=/etc/apt/sources.list.d/git-lfs.list
+- name: Install git-lfs package
+  apt:
+    name=git-lfs
+    state=present
+    update_cache=yes
+

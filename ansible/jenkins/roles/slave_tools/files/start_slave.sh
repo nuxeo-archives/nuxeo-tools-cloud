@@ -32,7 +32,7 @@ export NX_ORACLE12C_DB_NAME=nuxeo
 export NX_ORACLE12C_DB_PORT=1521
 
 export NX_PGSQL_DB_ADMINNAME=template1
-export NX_PGSQL_DB_ADMINPASS=nuxeospirit
+export NX_PGSQL_DB_ADMINPASS=nuxeo
 export NX_PGSQL_DB_ADMINUSER=nxadmin
 export NX_PGSQL_DB_NAME=db${SLAVE_NAME}
 export NX_PGSQL_DB_PORT=5432
