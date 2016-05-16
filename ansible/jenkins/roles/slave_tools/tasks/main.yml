@@ -103,6 +103,7 @@
 - apt: state=latest name=tcpwatch-httpproxy install_recommends=no
 - pip: name=logchart
 - pip: name=boto
+- pip: name=docker-py
 - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
 - alternatives: name=editor path=/usr/bin/vim.basic
 - file: src=/usr/lib/jvm/java-1.6.0-openjdk-amd64 path=/usr/lib/jvm/java-6-openjdk state=link
@@ -264,6 +265,10 @@
 - include: docker.yml
   when: not docker_installed.stat.exists
   tags: docker
+- name: Docker compose
+  get_url: url=https://github.com/docker/compose/releases/download/1.7.1/docker-compose-Linux-x86_64
+          dest=/usr/local/bin/docker-compose
+- file: path=/usr/local/bin/docker-compose mode=0755
 
 # libsass - replace with standard package when upgrading ubuntu
 - name: Check for libsass
