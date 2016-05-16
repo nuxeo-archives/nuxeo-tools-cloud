@@ -4,7 +4,7 @@
   register: java8_installed
 - name: Get Java8 package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/jdk-8u77-linux-x64.tar.gz dest=/tmp/jdk-8-linux-x64.tar.gz mode=get
+      object=/{{s3_tools_path}}/jdk-8u77-linux-x64.tar.gz dest=/tmp/jdk-8-linux-x64.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not java8_installed.stat.exists
 - name: Install JDK 8

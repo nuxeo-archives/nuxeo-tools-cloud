@@ -23,7 +23,7 @@
 - name: Prepare cache directory
   raw: 'if not exist c:\cache mkdir c:\cache'
 - name: Sync cache from S3
-  raw: "aws s3 sync s3://{{s3_bucket}}/{{s3_path}} c:/cache --region={{s3_region}} --delete"
+  raw: "aws s3 sync s3://{{s3_bucket}}/{{s3_tools_path}} c:/cache --region={{s3_region}} --delete"
 
 
 - name: Check for AutoIt

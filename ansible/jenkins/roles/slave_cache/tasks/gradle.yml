@@ -1,6 +1,6 @@
 ---
 - name: Gradle 1.6
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/gradle-1.6-bin.zip mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/gradle-1.6-bin.zip mode=geturl
   changed_when: false
   failed_when: false
   register: gradle16

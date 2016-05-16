@@ -145,7 +145,7 @@
 
 
 - name: Sync cache to S3
-  command: aws s3 sync . s3://{{s3_bucket}}/{{s3_path}}/ --region={{s3_region}} --delete
+  command: aws s3 sync . s3://{{s3_bucket}}/{{s3_tools_path}}/ --region={{s3_region}} --delete
   args:
     chdir: wincache
   environment:

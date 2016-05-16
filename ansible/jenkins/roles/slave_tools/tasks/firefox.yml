@@ -4,7 +4,7 @@
   register: ff24_installed
 - name: Get Firefox 24 package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/firefox-24.0.tar.bz2 dest=/tmp/firefox-24.0.tar.bz2 mode=get
+      object=/{{s3_tools_path}}/firefox-24.0.tar.bz2 dest=/tmp/firefox-24.0.tar.bz2 mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not ff24_installed.stat.exists
 - name: Install Firefox 24
@@ -21,7 +21,7 @@
   register: ff26_installed
 - name: Get Firefox 26 package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/firefox-26.0.tar.bz2 dest=/tmp/firefox-26.0.tar.bz2 mode=get
+      object=/{{s3_tools_path}}/firefox-26.0.tar.bz2 dest=/tmp/firefox-26.0.tar.bz2 mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not ff26_installed.stat.exists
 - name: Install Firefox 26
@@ -38,7 +38,7 @@
   register: ff42_installed
 - name: Get Firefox 42 package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/firefox-42.0.tar.bz2 dest=/tmp/firefox-42.0.tar.bz2 mode=get
+      object=/{{s3_tools_path}}/firefox-42.0.tar.bz2 dest=/tmp/firefox-42.0.tar.bz2 mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not ff42_installed.stat.exists
 - name: Install Firefox 42

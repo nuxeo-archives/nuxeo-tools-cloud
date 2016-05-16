@@ -4,7 +4,7 @@
   register: nsis_installed
 - name: Get nsis package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/nsis-2.46-trusty.zip dest=/tmp/nsis-2.46-trusty.zip mode=get
+      object=/{{s3_tools_path}}/nsis-2.46-trusty.zip dest=/tmp/nsis-2.46-trusty.zip mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not nsis_installed.stat.exists
 - name: Install nsis

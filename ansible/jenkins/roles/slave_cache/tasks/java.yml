@@ -1,6 +1,6 @@
 ---
 - name: Java 6
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/jdk-6u45-linux-x64.bin mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/jdk-6u45-linux-x64.bin mode=geturl
   changed_when: false
   failed_when: false
   register: java6
@@ -10,7 +10,7 @@
   when: java6.url is not defined
 
 - name: Java 8
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/jdk-8u77-linux-x64.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/jdk-8u77-linux-x64.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: java8

@@ -3,7 +3,7 @@
 
 - name: Get Node package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/node-v4.4.2-linux-x64.tar.xz dest=/tmp/node-v4.4.2-linux-x64.tar.xz mode=get
+      object=/{{s3_tools_path}}/node-v4.4.2-linux-x64.tar.xz dest=/tmp/node-v4.4.2-linux-x64.tar.xz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
 - name: Install Node
   unarchive: src=/tmp/node-v4.4.2-linux-x64.tar.xz dest=/opt/build/tools copy=no

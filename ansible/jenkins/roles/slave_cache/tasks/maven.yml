@@ -1,6 +1,6 @@
 ---
 - name: Maven 2.x
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/apache-maven-2.2.1-bin.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/apache-maven-2.2.1-bin.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: maven2x
@@ -9,7 +9,7 @@
   when: maven2x.url is not defined
 
 - name: Maven 3.0.x
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/apache-maven-3.0.5-bin.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/apache-maven-3.0.5-bin.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: maven30x
@@ -18,7 +18,7 @@
   when: maven30x.url is not defined
 
 - name: Maven 3.1.x
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/apache-maven-3.1.1-bin.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/apache-maven-3.1.1-bin.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: maven31x
@@ -27,7 +27,7 @@
   when: maven31x.url is not defined
 
 - name: Maven 3.2.x
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/apache-maven-3.2.5-bin.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/apache-maven-3.2.5-bin.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: maven32x
@@ -36,7 +36,7 @@
   when: maven32x.url is not defined
 
 - name: Maven 3.3.x
-  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_path}}/apache-maven-3.3.3-bin.tar.gz mode=geturl
+  s3: bucket={{s3_bucket}} region={{s3_region}} object=/{{s3_tools_path}}/apache-maven-3.3.3-bin.tar.gz mode=geturl
   changed_when: false
   failed_when: false
   register: maven33x

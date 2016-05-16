@@ -4,7 +4,7 @@
   register: java6_installed
 - name: Get Java6 package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/jdk-6u45-linux-x64.bin dest=/tmp/jdk-6-linux-x64.bin mode=get
+      object=/{{s3_tools_path}}/jdk-6u45-linux-x64.bin dest=/tmp/jdk-6-linux-x64.bin mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not java6_installed.stat.exists
 - name: Install Java 6

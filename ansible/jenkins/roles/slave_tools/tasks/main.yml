@@ -104,6 +104,7 @@
 - pip: name=logchart
 - pip: name=boto
 - pip: name=docker-py
+- pip: name=awscli
 - shell: easy_install -f http://funkload.nuxeo.org/snapshots/ -U funkload
 - alternatives: name=editor path=/usr/bin/vim.basic
 - file: src=/usr/lib/jvm/java-1.6.0-openjdk-amd64 path=/usr/lib/jvm/java-6-openjdk state=link
@@ -123,7 +124,7 @@
   changed_when: false
 - name: Get ffmpeg package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/ffmpeg-nuxeo_2.8.5-1_amd64.deb
+      object=/{{s3_tools_path}}/ffmpeg-nuxeo_2.8.5-1_amd64.deb
       dest=/tmp/ffmpeg-nuxeo_2.8.5-1_amd64.deb mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: ffmpegcheck.rc == 1
@@ -278,7 +279,7 @@
   changed_when: false
 - name: Get libsass package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/libsass-nuxeo_3.3.6-1_amd64.deb
+      object=/{{s3_tools_path}}/libsass-nuxeo_3.3.6-1_amd64.deb
       dest=/tmp/libsass-nuxeo_3.3.6-1_amd64.deb mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: libsasscheck.rc == 1

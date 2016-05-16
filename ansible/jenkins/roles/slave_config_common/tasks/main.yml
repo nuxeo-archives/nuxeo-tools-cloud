@@ -1,40 +1,62 @@
 ---
+- name: Get AWS ID
+  debug: msg="{{lookup('env','AWS_ACCESS_KEY_ID')}}"
+  no_log: true
+  register: aws_id
+- name: Get AWS secret
+  debug: msg="{{lookup('env','AWS_SECRET_ACCESS_KEY')}}"
+  no_log: true
+  register: aws_secret
+- name: Stop if credentials are missing
+  fail: msg="You must have AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your environment"
+  when: aws_id.msg == "" or aws_secret.msg == ""
+
 # Slave settings
+- name: Get jenkins base home from S3
+  command: aws s3 sync s3://{{s3_bucket}}/{{s3_config_path}}/jenkins_home/ /opt/jenkins --region={{s3_region}}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_id.msg}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret.msg}}"
+  register: homesync
+  changed_when: homesync.stdout != ""
 - file: path=/opt/jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
+- file: path=/opt/jenkins/.ssh/id_rsa state=file owner=jenkins group=jenkins mode=0600
+- file: path=/opt/jenkins/.profile state=file owner=jenkins group=jenkins mode=0600
+- file: path=/opt/jenkins/.netrc state=file owner=jenkins group=jenkins mode=0600
+- file: path=/opt/jenkins/.s3cfg state=file owner=jenkins group=jenkins mode=0600
+
 - authorized_key: user=jenkins key="{{item}}"
   with_file:
   - jenkins_id_rsa.pub
   - Jenkins_aws_system.pem.pub
 - authorized_key: user=jenkins key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
+
 - copy: src=91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
         mode=440 owner=root group=root
-- copy: src=~/.ssh/jenkins_id_rsa dest=/opt/jenkins/.ssh/id_rsa
-        owner=jenkins group=jenkins mode=600 backup=no
 - copy: src=jenkins_id_rsa.pub dest=/opt/jenkins/.ssh/id_rsa.pub
         owner=jenkins group=jenkins mode=600 backup=no
 - copy: src=jenkins_ssh_config dest=/opt/jenkins/.ssh/config
         owner=jenkins group=jenkins mode=600 backup=no
 - file: path=/opt/jenkins/.m2 state=directory owner=jenkins group=jenkins
 - name: Add m2 repo seed (aws)
-  synchronize: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repo_seed
-        owner=true group=true
+  command: aws s3 sync s3://{{s3_bucket}}/ansible/linux/m2_repo_seed/ /opt/jenkins/.m2/repo_seed --region={{s3_region}}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_id.msg}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret.msg}}"
+  register: seedsync
+  changed_when: seedsync.stdout != ""
   when: "'aws' in group_names"
 - name: Add m2 repo seed (docker)
-  synchronize: src=/opt/build/m2_repo_seed/ dest=/opt/jenkins/.m2/repository
-        owner=true group=true
+  command: aws s3 sync s3://{{s3_bucket}}/ansible/linux/m2_repo_seed/ /opt/jenkins/.m2/repository --region={{s3_region}}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_id.msg}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret.msg}}"
+  register: seedsync
+  changed_when: seedsync.stdout != ""
   when: "'aws' not in group_names"
 - name: Fix .m2 rights
   command: chown -R jenkins:jenkins /opt/jenkins/.m2
   changed_when: false
-- copy: src=/opt/build/hudson/.profile dest=/opt/jenkins/.profile
-        owner=jenkins group=jenkins backup=no
-- copy: src=/opt/build/hudson/.bashrc dest=/opt/jenkins/.bashrc
-        owner=jenkins group=jenkins backup=no
-  when: "'aws' in group_names"
-- copy: src=/opt/build/hudson/.netrc dest=/opt/jenkins/.netrc
-        owner=jenkins group=jenkins mode=600 backup=no
-- copy: src=/opt/build/hudson/.s3cfg dest=/opt/jenkins/.s3cfg
-        owner=jenkins group=jenkins mode=600 backup=no
 
 - name: Git config
   # should be backup=yes but create=true option is missing on ini_file
@@ -47,21 +69,31 @@
   become_user: jenkins
   changed_when: false
 
-- copy: src=/opt/build/hudson/gradle.properties dest=/opt/build/hudson/gradle.properties
-        owner=jenkins group=jenkins
-- copy: src=/opt/build/hudson/instance.clid dest=/opt/build/hudson/instance.clid
-        owner=jenkins group=jenkins
+- name: gradle.properties
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_config_path}}/gradle.properties dest=/opt/build/hudson/gradle.properties mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
+- name: instance.clid
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_config_path}}/instance.clid dest=/opt/build/hudson/instance.clid mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
 - copy: src=use_mnt_ondemand.sh dest=/opt/jenkins/use_mnt.sh
         mode=755 owner=jenkins group=jenkins
   when: "'aws_ondemand' in group_names"
 
-- synchronize: src=/opt/build/keystores dest=/opt/build/ owner=no group=no delete=yes recursive=yes rsync_path="sudo -u jenkins rsync"
-  become_user: jenkins
+- name: Keystores
+  command: aws s3 sync s3://{{s3_bucket}}/{{s3_config_path}}/keystores/ /opt/build/keystores --region={{s3_region}}
+  environment:
+    AWS_ACCESS_KEY_ID: "{{aws_id.msg}}"
+    AWS_SECRET_ACCESS_KEY: "{{aws_secret.msg}}"
   register: keystore_sync
+  changed_when: keystore_sync.stdout != ""
 - shell: chown -R jenkins:jenkins /opt/build/keystores
   when: keystore_sync.changed
 - name: Kerberos krb5.conf
-  copy: src=/opt/build/keystores/keytabs/krb5.conf dest=/etc/krb5.conf
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_config_path}}/keystores/keytabs/krb5.conf dest=/etc/krb5.conf mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
 
 - name: Setup Azure CLI
   shell: azure account import /opt/build/keystores/azure.nuxeo.com.publishsettings

@@ -5,7 +5,7 @@
   register: maven2x_installed
 - name: Get maven 2.x package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/apache-maven-2.2.1-bin.tar.gz dest=/tmp/apache-maven-2.2.1-bin.tar.gz mode=get
+      object=/{{s3_tools_path}}/apache-maven-2.2.1-bin.tar.gz dest=/tmp/apache-maven-2.2.1-bin.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not maven2x_installed.stat.exists
 - name: Install maven 2.x
@@ -19,7 +19,7 @@
   register: maven30x_installed
 - name: Get maven 3.0.x package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/apache-maven-3.0.5-bin.tar.gz dest=/tmp/apache-maven-3.0.5-bin.tar.gz mode=get
+      object=/{{s3_tools_path}}/apache-maven-3.0.5-bin.tar.gz dest=/tmp/apache-maven-3.0.5-bin.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not maven30x_installed.stat.exists
 - name: Install maven 3.0.x
@@ -33,7 +33,7 @@
   register: maven31x_installed
 - name: Get maven 3.1.x package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/apache-maven-3.1.1-bin.tar.gz dest=/tmp/apache-maven-3.1.1-bin.tar.gz mode=get
+      object=/{{s3_tools_path}}/apache-maven-3.1.1-bin.tar.gz dest=/tmp/apache-maven-3.1.1-bin.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not maven31x_installed.stat.exists
 - name: Install maven 3.1.x
@@ -47,7 +47,7 @@
   register: maven32x_installed
 - name: Get maven 3.2.x package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/apache-maven-3.2.5-bin.tar.gz dest=/tmp/apache-maven-3.2.5-bin.tar.gz mode=get
+      object=/{{s3_tools_path}}/apache-maven-3.2.5-bin.tar.gz dest=/tmp/apache-maven-3.2.5-bin.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not maven32x_installed.stat.exists
 - name: Install maven 3.2.x
@@ -61,7 +61,7 @@
   register: maven33x_installed
 - name: Get maven 3.3.x package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/apache-maven-3.3.3-bin.tar.gz dest=/tmp/apache-maven-3.3.3-bin.tar.gz mode=get
+      object=/{{s3_tools_path}}/apache-maven-3.3.3-bin.tar.gz dest=/tmp/apache-maven-3.3.3-bin.tar.gz mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
   when: not maven33x_installed.stat.exists
 - name: Install maven 3.3.x

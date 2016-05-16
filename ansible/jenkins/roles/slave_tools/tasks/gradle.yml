@@ -1,7 +1,7 @@
 ---
 - name: Get Gradle package
   s3: bucket={{s3_bucket}} region={{s3_region}}
-      object=/{{s3_path}}/gradle-1.6-bin.zip dest=/tmp/gradle-1.6-bin.zip mode=get
+      object=/{{s3_tools_path}}/gradle-1.6-bin.zip dest=/tmp/gradle-1.6-bin.zip mode=get
       aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}}
 - name: Install Gradle
   unarchive: src=/tmp/gradle-1.6-bin.zip dest=/opt/build/tools copy=no
