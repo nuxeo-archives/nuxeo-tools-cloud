@@ -1,4 +1,4 @@
 docker/files/id_rsa.pub
 cache
 wincache
-slave.retry
+*.retry

@@ -15,7 +15,7 @@
   alternatives: name=firefox link=/usr/bin/firefox path=/opt/build/tools/firefox-24/firefox
 - s3: bucket={{s3_bucket}} region={{s3_region}}
       object=/{{s3_config_path}}/settings.xml dest=//opt/jenkins/.m2/settings.xml mode=get
-      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=true
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
   become_user: jenkins
 - file: path=/opt/jenkins/.m2/settings.xml state=file owner=jenkins group=jenkins
 

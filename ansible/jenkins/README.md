@@ -89,46 +89,76 @@ Delete unused old AMIs. Delete unused associated "snapshot" volumes.
 First build the nuxeo/jenkins-base image:
 Add your id\_rsa.pub in docker/files/id\_rsa.pub (so ansible can connect later) then:
 
-    cd docker
-    docker build -t nuxeo/jenkins-base .
+    docker build -t nuxeo/jenkins-base docker
 
 You should update that base image now and then to get package updates, that will make the ansible build faster.
 
 
 Run a container from that image, exporting the SSH port locally:
 
-    docker run -d -t -i -p 127.0.0.1:2222:22 --name=slave nuxeo/jenkins-base
+    docker run -d -t -i -p 127.0.0.1:2222:22 --name=slave-common nuxeo/jenkins-base
 
 Make an inventory file for ansible to access this container:
 
     [multidb:children]
     docker
-
     [docker:children]
     slaves
-
     [slaves]
-    container ansible_ssh_port=2222 ansible_ssh_host=127.0.0.1
+    slavecommon ansible_ssh_port=2222 ansible_ssh_host=127.0.0.1
 
 Run ansible normally on this container:
 
-    ansible-playbook -i inventory/slavetmp/hosts slave.yml -v
+    ansible-playbook -i inventory/slave-common/hosts slave-common.yml -v
 
 Commit this container:
 
-    docker commit slave nuxeo/jenkins-docker
+    docker commit slave-common nuxeo/jenkins-common
+
+Run pub/priv containers from that image:
+
+    docker run -d -t -i -p 127.0.0.1:2223:22 --name=slave-pub nuxeo/jenkins-common
+    docker run -d -t -i -p 127.0.0.1:2224:22 --name=slave-priv nuxeo/jenkins-common
+
+Make inventory files to access those containers:
+
+    [multidb:children]
+    docker
+    [docker:children]
+    slaves
+    [slaves]
+    slavepub ansible_ssh_port=2223 ansible_ssh_host=127.0.0.1
+
+    [multidb:children]
+    docker
+    [docker:children]
+    slaves
+    [slaves]
+    slavepriv ansible_ssh_port=2224 ansible_ssh_host=127.0.0.1
+
+Run ansible on those containers:
+
+    ansible-playbook -i inventory/slave-pub/hosts slave-pub.yml -v
+    ansible-playbook -i inventory/slave-priv/hosts slave-priv.yml -v
+
+Commit those containers:
+
+    docker commit slave-pub nuxeo/jenkins-pub
+    docker commit slave-priv nuxeo/jenkins-priv
 
 Tag the image for the remote registry:
 
-    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-slave
-    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-ondemand
-    docker tag nuxeo/jenkins-docker dockerpriv.nuxeo.com:443/nuxeo/jenkins-check
+    docker tag nuxeo/jenkins-pub dockerpriv.nuxeo.com:443/nuxeo/jenkins-slave
+    docker tag nuxeo/jenkins-pub dockerpriv.nuxeo.com:443/nuxeo/jenkins-ondemand
+    docker tag nuxeo/jenkins-pub dockerpriv.nuxeo.com:443/nuxeo/jenkins-check
+    docker tag nuxeo/jenkins-priv dockerpriv.nuxeo.com:443/nuxeo/jenkins-slavepriv
 
 Push the image:
 
     docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-slave
     docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-ondemand
     docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-check
+    docker push dockerpriv.nuxeo.com:443/nuxeo/jenkins-slavepriv
 
 You can then pull the image on the slaves hosts and restart the slaves containers with the new image.
 

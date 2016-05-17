@@ -11,11 +11,6 @@
   fail: msg="You must have AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your environment"
   when: aws_id.msg == "" or aws_secret.msg == ""
 
-- name: Create user 'ubuntu'
-  authorized_key: user=ubuntu key="{{item}}"
-  with_file:
-  - Jenkins_aws_system.pem.pub
-- authorized_key: user=ubuntu key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
 - name: Create user 'jenkins'
   user: name=jenkins home=/opt/jenkins state=present shell=/bin/bash
 - file: path=/opt/jenkins/ state=directory owner=jenkins group=jenkins

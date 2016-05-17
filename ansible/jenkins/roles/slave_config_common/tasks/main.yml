@@ -12,6 +12,16 @@
   when: aws_id.msg == "" or aws_secret.msg == ""
 
 # Slave settings
+- name: .ssh dir for ubuntu
+  file: path=/home/ubuntu/.ssh state=directory owner=ubuntu group=ubuntu mode=0700
+- name: Get authorized_keys for ubuntu
+  s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_config_path}}/jenkins_home/.ssh/authorized_keys dest=/home/ubuntu/.ssh/authorized_keys mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
+- authorized_key: user=ubuntu key="{{item}}"
+  with_file:
+  - Jenkins_aws_system.pem.pub
+
 - name: Get jenkins base home from S3
   command: aws s3 sync s3://{{s3_bucket}}/{{s3_config_path}}/jenkins_home/ /opt/jenkins --region={{s3_region}}
   environment:
@@ -21,6 +31,7 @@
   changed_when: homesync.stdout != ""
 - file: path=/opt/jenkins/.ssh state=directory owner=jenkins group=jenkins mode=700
 - file: path=/opt/jenkins/.ssh/id_rsa state=file owner=jenkins group=jenkins mode=0600
+- file: path=/opt/jenkins/.ssh/authorized_keys state=file owner=jenkins group=jenkins mode=0600
 - file: path=/opt/jenkins/.profile state=file owner=jenkins group=jenkins mode=0600
 - file: path=/opt/jenkins/.netrc state=file owner=jenkins group=jenkins mode=0600
 - file: path=/opt/jenkins/.s3cfg state=file owner=jenkins group=jenkins mode=0600
@@ -29,7 +40,6 @@
   with_file:
   - jenkins_id_rsa.pub
   - Jenkins_aws_system.pem.pub
-- authorized_key: user=jenkins key='{{lookup("pipe", "cat /opt/build/hudson/authorized_keys/id_*.pub" )}}'
 
 - copy: src=91-cloudimg-jenkins dest=/etc/sudoers.d/91-cloudimg-jenkins
         mode=440 owner=root group=root
@@ -72,11 +82,11 @@
 - name: gradle.properties
   s3: bucket={{s3_bucket}} region={{s3_region}}
       object=/{{s3_config_path}}/gradle.properties dest=/opt/build/hudson/gradle.properties mode=get
-      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
 - name: instance.clid
   s3: bucket={{s3_bucket}} region={{s3_region}}
       object=/{{s3_config_path}}/instance.clid dest=/opt/build/hudson/instance.clid mode=get
-      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
 - copy: src=use_mnt_ondemand.sh dest=/opt/jenkins/use_mnt.sh
         mode=755 owner=jenkins group=jenkins
   when: "'aws_ondemand' in group_names"
@@ -93,7 +103,7 @@
 - name: Kerberos krb5.conf
   s3: bucket={{s3_bucket}} region={{s3_region}}
       object=/{{s3_config_path}}/keystores/keytabs/krb5.conf dest=/etc/krb5.conf mode=get
-      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=false
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
 
 - name: Setup Azure CLI
   shell: azure account import /opt/build/keystores/azure.nuxeo.com.publishsettings

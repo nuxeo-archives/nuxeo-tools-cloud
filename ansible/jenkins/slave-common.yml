@@ -12,5 +12,4 @@
   roles:
   - slave_tools
   - slave_config_common
-  - slave_config_qapriv
 
