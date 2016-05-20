@@ -286,7 +286,7 @@
 # slave.jar
 - name: Install current slave.jar
   file: path=/opt/jenkins/bin state=directory owner=jenkins group=jenkins
-- get_url: url=http://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
+- get_url: url=https://qa.nuxeo.org/jenkins/jnlpJars/slave.jar
            dest=/opt/jenkins/bin/slave.jar
   become_user: jenkins
 
