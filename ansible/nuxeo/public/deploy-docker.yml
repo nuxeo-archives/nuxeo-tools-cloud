@@ -19,21 +19,21 @@
   - {role: common}
 
   # Install packages and download distribution
-  - {role: db, stage: init}
+  - {role: postgresql-server, stage: init}
   - {role: nuxeo, stage: init}
 
   # Prepare for updates
   - {role: nuxeo, stage: stop}
-  - {role: db, stage: stop}
+  - {role: postgresql-server, stage: stop}
 
   # Update configuration/data
-  - {role: db, stage: setup}
-  #- {role: db, stage: setup, when: pginstall.changed or distribution_changed|bool}
+  - {role: postgresql-server, stage: setup}
+  #- {role: postgresql-server, stage: setup, when: pginstall.changed or distribution_changed|bool}
   - {role: nuxeo, stage: setup}
-  #- {role: db, stage: setup, when: distribution_changed|bool}
+  #- {role: postgresql-server, stage: setup, when: distribution_changed|bool}
 
   # Complete update
-  - {role: db, stage: start}
+  - {role: postgresql-server, stage: start}
   - {role: nuxeo, stage: start}
 
 #- include: docker_stop.yml
