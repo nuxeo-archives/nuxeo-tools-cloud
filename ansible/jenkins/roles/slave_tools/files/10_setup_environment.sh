@@ -75,8 +75,8 @@ if [ ! -f /etc/container_environment/NX_MYSQL_DB_ADMINNAME ]; then
     echo "NX_MYSQL_DB_ADMINNAME=mysql" >> /etc/environment
 fi
 if [ ! -f /etc/container_environment/NX_MYSQL_DB_ADMINPASS ]; then
-    echo nuxeospirit >> /etc/container_environment/NX_MYSQL_DB_ADMINPASS
-    echo "NX_MYSQL_DB_ADMINPASS=nuxeospirit" >> /etc/environment
+    echo nuxeo >> /etc/container_environment/NX_MYSQL_DB_ADMINPASS
+    echo "NX_MYSQL_DB_ADMINPASS=nuxeo" >> /etc/environment
 fi
 if [ ! -f /etc/container_environment/NX_MYSQL_DB_ADMINUSER ]; then
     echo root >> /etc/container_environment/NX_MYSQL_DB_ADMINUSER

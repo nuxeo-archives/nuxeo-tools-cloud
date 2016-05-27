@@ -232,6 +232,9 @@
   when: mongoinstalled.stdout != "3.2"
   tags: mongodb
 
+# MySQL
+- include: mysql.yml
+
 # Redis
 - name: Upgrade/install Redis packages
   apt: state=latest name={{item}}
