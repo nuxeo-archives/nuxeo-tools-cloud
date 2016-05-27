@@ -24,6 +24,15 @@ for v in HOST PORT NAME USER PASS ADMINNAME ADMINUSER ADMINPASS; do
     done
 done
 
+# Same for MongoDB
+for v in SERVER DBNAME; do
+    var="NX_MONGODB_$v"
+    if [ "${!var}x" != "x" ]; then
+        echo ${!var} >> /etc/container_environment/NX_MONGODB_$v
+        echo "NX_MONGODB_$v=${!var}" >> /etc/environment
+    fi
+done
+
 # Add defaults to environment when variable is not defined
 
 if [ ! -f /etc/container_environment/NX_DB_PASS ]; then

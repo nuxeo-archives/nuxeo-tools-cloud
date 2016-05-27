@@ -1,0 +1,4 @@
+#!/bin/sh -e
+
+exec /sbin/setuser mongodb /usr/bin/mongod --config /etc/mongod.conf
+
