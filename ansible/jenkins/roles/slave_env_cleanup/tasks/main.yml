@@ -1,0 +1,4 @@
+---
+- name: Make sure /etc/container_environment/ is empty
+  shell: rm -f /etc/container_environment/*
+

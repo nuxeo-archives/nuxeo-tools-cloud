@@ -5,4 +5,5 @@
   become: yes
   roles:
   - slave_config_qa
+  - slave_env_cleanup
 
