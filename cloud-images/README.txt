@@ -1,4 +1,4 @@
-Those scripts create images with Nuxeo 6.0 LTS using PostgreSQL and an Apache front-end in different cloud platforms.
+Those scripts create images with NuxeoLTS 2015 using PostgreSQL and an Apache front-end in different cloud platforms.
 The base OS is Ubuntu 14.04 LTS.
 
 Requirements:
