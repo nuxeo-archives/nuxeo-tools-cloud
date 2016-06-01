@@ -1,3 +1,4 @@
+setuptools==21.2.1
 ansible==2.0.1
 docker-py
 boto

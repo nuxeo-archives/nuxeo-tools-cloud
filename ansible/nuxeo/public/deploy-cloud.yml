@@ -5,14 +5,15 @@
   gather_facts: yes
   sudo: yes
   roles:
-  - {role: common}
+  - role: warmup-apt-cache
+  - role: common
 
 # Install packages and download distribution
 - hosts: db
   gather_facts: no
   sudo: yes
   roles:
-  - {role: db, stage: init}
+  - {role: postgresql-server, stage: init}
 - hosts: nuxeo
   gather_facts: no
   sudo: yes
@@ -29,14 +30,14 @@
   gather_facts: no
   sudo: yes
   roles:
-  - {role: db, stage: stop}
+  - {role: postgresql-server, stage: stop}
 
 # Update configuration/data
 - hosts: db
   gather_facts: no
   sudo: yes
   roles:
-  - {role: db, stage: setup}
+  - {role: postgresql-server, stage: setup}
 - hosts: nuxeo
   gather_facts: no
   sudo: yes
@@ -48,7 +49,7 @@
   gather_facts: no
   sudo: yes
   roles:
-  - {role: db, stage: start}
+  - {role: postgresql-server, stage: start}
 - hosts: nuxeo
   gather_facts: no
   sudo: yes
