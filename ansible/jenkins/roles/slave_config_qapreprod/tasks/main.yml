@@ -1,0 +1,21 @@
+---
+- name: Get AWS ID
+  debug: msg="{{lookup('env','AWS_ACCESS_KEY_ID')}}"
+  no_log: true
+  register: aws_id
+- name: Get AWS secret
+  debug: msg="{{lookup('env','AWS_SECRET_ACCESS_KEY')}}"
+  no_log: true
+  register: aws_secret
+- name: Stop if credentials are missing
+  fail: msg="You must have AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in your environment"
+  when: aws_id.msg == "" or aws_secret.msg == ""
+
+- name: Set Firefox 26 as default
+  alternatives: name=firefox link=/usr/bin/firefox path=/opt/build/tools/firefox-26/firefox
+- s3: bucket={{s3_bucket}} region={{s3_region}}
+      object=/{{s3_config_path}}/settings.xml dest=//opt/jenkins/.m2/settings.xml mode=get
+      aws_access_key={{aws_id.msg}} aws_secret_key={{aws_secret.msg}} overwrite=different
+  become_user: jenkins
+- file: path=/opt/jenkins/.m2/settings.xml state=file owner=jenkins group=jenkins
+
