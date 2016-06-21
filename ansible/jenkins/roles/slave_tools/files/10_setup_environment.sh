@@ -15,7 +15,7 @@ for v in HOST PORT NAME USER PASS ADMINNAME ADMINUSER ADMINPASS; do
         echo ${!var} >> /etc/container_environment/NX_DB_$v
         echo "NX_DB_$v=${!var}" >> /etc/environment
     fi
-    for d in MSSQL MYSQL ORACLE11G ORACLE12C PGSQL; do
+    for d in MSSQL MYSQL MARIADB ORACLE11G ORACLE12C PGSQL; do
         var="NX_$d_DB_$v"
         if [ "${!var}x" != "x" ]; then
             echo ${!var} >> /etc/container_environment/NX_$d_DB_$v
@@ -89,6 +89,28 @@ fi
 if [ ! -f /etc/container_environment/NX_MYSQL_DB_PORT ]; then
     echo 3306 >> /etc/container_environment/NX_MYSQL_DB_PORT
     echo "NX_MYSQL_DB_PORT=3306" >> /etc/environment
+fi
+
+
+if [ ! -f /etc/container_environment/NX_MARIADB_DB_ADMINNAME ]; then
+    echo mysql >> /etc/container_environment/NX_MARIADB_DB_ADMINNAME
+    echo "NX_MARIADB_DB_ADMINNAME=mysql" >> /etc/environment
+fi
+if [ ! -f /etc/container_environment/NX_MARIADB_DB_ADMINPASS ]; then
+    echo nuxeo >> /etc/container_environment/NX_MARIADB_DB_ADMINPASS
+    echo "NX_MARIADB_DB_ADMINPASS=nuxeo" >> /etc/environment
+fi
+if [ ! -f /etc/container_environment/NX_MARIADB_DB_ADMINUSER ]; then
+    echo root >> /etc/container_environment/NX_MARIADB_DB_ADMINUSER
+    echo "NX_MARIADB_DB_ADMINUSER=root" >> /etc/environment
+fi
+if [ ! -f /etc/container_environment/NX_MARIADB_DB_NAME ]; then
+    echo db${SLAVE_NAME} >> /etc/container_environment/NX_MARIADB_DB_NAME
+    echo "NX_MARIADB_DB_NAME=db${SLAVE_NAME}" >> /etc/environment
+fi
+if [ ! -f /etc/container_environment/NX_MARIADB_DB_PORT ]; then
+    echo 3307 >> /etc/container_environment/NX_MARIADB_DB_PORT
+    echo "NX_MARIADB_DB_PORT=3307" >> /etc/environment
 fi
 
 
