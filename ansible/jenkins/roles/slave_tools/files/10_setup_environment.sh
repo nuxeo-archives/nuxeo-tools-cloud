@@ -112,6 +112,16 @@ if [ -z "${MULTIDB}" ]; then
     fi
 
 
+    if [ ! -f /etc/container_environment/NX_MONGODB_SERVER ]; then
+        echo "127.0.0.1" >> /etc/container_environment/NX_MONGODB_SERVER
+        echo "NX_MONGODB_SERVER=127.0.0.1" >> /etc/environment
+    fi
+    if [ ! -f /etc/container_environment/NX_MONGODB_DBNAME ]; then
+        echo db${SLAVE_NAME} >> /etc/container_environment/NX_MONGODB_DBNAME
+        echo "NX_MONGODB_DBNAME=db${SLAVE_NAME}" >> /etc/environment
+    fi
+
+
 else
 
 
