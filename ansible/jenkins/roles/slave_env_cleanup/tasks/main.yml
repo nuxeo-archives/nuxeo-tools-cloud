@@ -1,4 +1,8 @@
 ---
 - name: Make sure /etc/container_environment/ is empty
   shell: rm -f /etc/container_environment/*
+- name: Reset /etc/environment
+  copy: src=environment dest=/etc/environment mode=0644 owner=root group=root
+- name: Removed cached slave id
+  file: path=/slaveid state=absent
 

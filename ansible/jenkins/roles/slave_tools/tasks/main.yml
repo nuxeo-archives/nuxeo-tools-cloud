@@ -305,6 +305,14 @@
   copy: src=20_update_slave_jar.sh dest=/etc/my_init.d/20_update_slave_jar.sh
         mode=0755 owner=root group=root
   when: myinitd.stat.exists
+- file: path=/etc/service/namettl state=directory
+  when: myinitd.stat.exists
+- name: Add name keepalive script for multidb env
+  copy: src=namettl dest=/etc/service/namettl/run mode=0755
+  when: myinitd.stat.exists
+- name: Disable name keepalive script by default
+  file: path=/etc/service/namettl/down state=touch
+  when: myinitd.stat.exists
 
 - include: postgresql.yml
 
