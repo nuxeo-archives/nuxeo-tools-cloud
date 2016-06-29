@@ -5,4 +5,6 @@
   copy: src=environment dest=/etc/environment mode=0644 owner=root group=root
 - name: Removed cached slave id
   file: path=/slaveid state=absent
+- name: Remove "init done" token
+  file: path=/init_done state=absent
 
