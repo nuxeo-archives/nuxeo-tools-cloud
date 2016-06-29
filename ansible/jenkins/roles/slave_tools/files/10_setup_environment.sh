@@ -1,5 +1,9 @@
 #!/bin/bash -e
 
+if [ -f /init_done ]; then
+    exit 0
+fi
+
 HOST_IP=$(ip route show | grep '^default' | awk '{print $3}')
 
 if [ -n "${MULTIDB}" ]; then
@@ -281,3 +285,7 @@ else
 
 
 fi
+
+
+touch /init_done
+
