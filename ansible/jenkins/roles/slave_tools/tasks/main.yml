@@ -95,6 +95,7 @@
   - python-lxml
   - python-requests
   - python-yaml
+  - xmlstarlet
 - apt: state=latest name=tcpwatch-httpproxy install_recommends=no
 - pip: name=logchart
 - pip: name=boto
