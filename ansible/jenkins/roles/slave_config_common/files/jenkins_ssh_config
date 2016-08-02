@@ -11,4 +11,6 @@ Host joyeux
 Host www
     HostName 10.10.0.63
     ProxyCommand ssh -W %h:%p ubuntu@52.2.219.159 2> /dev/null
+Host 10.10.2.*
+    ProxyCommand ssh -W %h:%p ubuntu@52.18.135.145 2> /dev/null
 
