@@ -74,10 +74,10 @@
             section=user option=name value="Jenkins Nuxeo"
 - ini_file: dest=/opt/jenkins/.gitconfig state=present backup=no owner=jenkins group=jenkins mode=640
             section=user option=email value="jenkins@nuxeo.com"
-- name: Add git-lfs
-  command: git lfs install
-  become_user: jenkins
-  changed_when: false
+#- name: Add git-lfs
+#  command: git lfs install
+#  become_user: jenkins
+#  changed_when: false
 
 - name: gradle.properties
   s3: bucket={{s3_bucket}} region={{s3_region}}
