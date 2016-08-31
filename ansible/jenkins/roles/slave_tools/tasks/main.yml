@@ -221,7 +221,7 @@
   register: azure_install
   tags: azure-cli
 - name: Add azure symlink
-  file: path=/usr/local/bin/azure src=/opt/build/tools/node-v4.4.2-linux-x64/bin/azure state=link
+  file: path=/usr/local/bin/azure src=/opt/build/tools/node-v4.5.0-linux-x64/bin/azure state=link
   tags: azure-cli
 
 # NSIS
