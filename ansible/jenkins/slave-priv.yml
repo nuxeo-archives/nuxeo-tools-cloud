@@ -1,8 +1,0 @@
----
-- hosts: all
-  gather_facts: no
-  user: ubuntu
-  become: yes
-  roles:
-  - slave_config_qapriv
-  - slave_env_cleanup

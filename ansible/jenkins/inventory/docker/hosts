@@ -1,4 +1,0 @@
-[docker:children]
-slaves
-
-[slaves]

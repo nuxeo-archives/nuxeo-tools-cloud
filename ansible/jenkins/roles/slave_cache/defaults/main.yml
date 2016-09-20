@@ -1,4 +1,0 @@
----
-s3_region: eu-west-1
-s3_bucket: nuxeo-jenkins-resources
-s3_tools_path: packages/linux
