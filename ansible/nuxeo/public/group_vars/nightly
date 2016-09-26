@@ -12,5 +12,6 @@ nuxeo_packages:
 - nuxeo-dam
 - nuxeo-drive
 - nuxeo-template-rendering
+- nuxeo-web-ui
 nuxeo_conf:
   nuxeo.bind.address: 127.0.0.1
