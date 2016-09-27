@@ -103,6 +103,7 @@
   when: nuxeo_ui_packages is defined
   environment:
     NUXEO_CONF: "{{nuxeo_conf_dir}}/nuxeo.conf"
+  sudo_user: "{{nuxeo_user}}"
 - name: Install packages
   shell: "{{nuxeo_base}}/server/bin/nuxeoctl --accept=true {{'--snapshot' if nuxeo_is_snapshot|bool else ''}} mp-install {{nuxeo_packages|default([])|join(' ')}}"
   environment:
