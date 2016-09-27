@@ -9,8 +9,10 @@ dbname: nuxeo
 dbuser: nuxeo
 dbpass: supersecretpass
 nuxeo_packages:
-- nuxeo-template-rendering
 - nuxeo-web-ui
+- nuxeo-jsf-ui
+nuxeo_packages:
+- nuxeo-template-rendering
 - nuxeo-dam
 - nuxeo-drive
 nuxeo_conf:
