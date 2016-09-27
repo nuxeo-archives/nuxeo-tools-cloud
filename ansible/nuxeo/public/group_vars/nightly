@@ -9,9 +9,9 @@ dbname: nuxeo
 dbuser: nuxeo
 dbpass: supersecretpass
 nuxeo_packages:
-- nuxeo-dam
-- nuxeo-drive
 - nuxeo-template-rendering
 - nuxeo-web-ui
+- nuxeo-dam
+- nuxeo-drive
 nuxeo_conf:
   nuxeo.bind.address: 127.0.0.1
