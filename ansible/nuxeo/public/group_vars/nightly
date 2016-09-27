@@ -8,7 +8,7 @@ enable_cors: true
 dbname: nuxeo
 dbuser: nuxeo
 dbpass: supersecretpass
-nuxeo_packages:
+nuxeo_ui_packages:
 - nuxeo-web-ui
 - nuxeo-jsf-ui
 nuxeo_packages:
