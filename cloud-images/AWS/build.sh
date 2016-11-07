@@ -12,7 +12,7 @@ while [ "$(aws ec2 describe-instances --instance-ids ${instance_id} --region ${R
 
 # Create image
 tstamp=$(date +"%Y%m%d%H%M")
-aws ec2 create-image --instance-id ${instance_id} --name "nuxeo-lts-2015-$tstamp" --description "Nuxeo LTS 2015" --region ${REGION}
+aws ec2 create-image --instance-id ${instance_id} --name "nuxeo-lts-2016-$tstamp" --description "Nuxeo LTS 2016" --region ${REGION}
 
 # Terminate base instance
 aws ec2 terminate-instances --instance-ids ${instance_id} --region ${REGION}

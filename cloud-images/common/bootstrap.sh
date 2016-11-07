@@ -5,7 +5,8 @@ echo '*       soft    nofile      4096' >> /etc/security/limits.conf
 echo '*       hard    nofile      8192' >> /etc/security/limits.conf
 
 # Add the nuxeo repository to the repository list
-echo "deb http://apt.nuxeo.org/ trusty releases" > /etc/apt/sources.list.d/nuxeo.list
+echo "deb http://apt.nuxeo.org/ xenial releases" > /etc/apt/sources.list.d/nuxeo.list
+echo "deb http://apt.nuxeo.org/ xenial snapshots" > /etc/apt/sources.list.d/nuxeo.list
 # Register the nuxeo key
 wget -q -O- http://apt.nuxeo.org/nuxeo.key | apt-key add -
 
@@ -21,20 +22,16 @@ update-locale LANG=en_US.UTF-8
 apt-get update
 apt-get -q -y upgrade
 apt-get -q -y install apache2
-apt-get -q -y install openssh-server openssh-client vim postfix pwgen curl
+apt-get -q -y install openssh-server openssh-client vim postfix pwgen curl sudo
 
 # Secure postfix
 perl -p -i -e "s/^inet_interfaces\s*=.*$/inet_interfaces=127.0.0.1/" /etc/postfix/main.cf
 
-# Install Java 7
-apt-get -q -y install openjdk-7-jdk
-update-java-alternatives -s java-1.7.0-openjdk-amd64
-
 # Install Java 8
-curl -o/tmp/jdk-8-linux-x64.tgz -L --insecure --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u40-b26/jdk-8u40-linux-x64.tar.gz'
+curl -o/tmp/jdk-8-linux-x64.tgz -L --insecure --header 'Cookie: oraclelicense=accept-securebackup-cookie' 'http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz'
 tar xzf /tmp/jdk-8-linux-x64.tgz -C /usr/lib/jvm
 rm /tmp/jdk-8-linux-x64.tgz
-ln -s /usr/lib/jvm/jdk1.8.0_40 /usr/lib/jvm/java-8
+ln -s /usr/lib/jvm/jdk1.8.0_111 /usr/lib/jvm/java-8
 update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-8/jre/bin/java 1081
 update-alternatives --set java /usr/lib/jvm/java-8/jre/bin/java
 
@@ -85,6 +82,7 @@ pg_dropcluster --stop $(pg_lsclusters -h | grep main | awk '{print $1}') main
 # Prepare first boot
 update-rc.d -f nuxeo remove
 cat << EOF > /etc/init.d/firstboot
+#!/bin/bash -e
 ### BEGIN INIT INFO
 # Provides:          firstboot
 # Required-Start:    \$local_fs \$remote_fs \$network \$syslog \$postgresql
@@ -97,6 +95,10 @@ cat << EOF > /etc/init.d/firstboot
 
 case "\$1" in
   start)
+    if [ -f /firstboot_done ]; then
+        exit 0
+    fi
+    echo "DO NOT REMOVE THIS FILE" > /firstboot_done
     # Generate new DB password
     pgpass=\$(pwgen -c1)
     echo \$pgpass > /tmp/pgpass # DEBUG
@@ -104,9 +106,9 @@ case "\$1" in
     perl -p -i -e "s/^nuxeo.db.password\s*=.*$/nuxeo.db.password=\$pgpass/" /etc/nuxeo/nuxeo.conf
 
     # Enable nuxeo & deactivate firstboot
-    update-rc.d -f firstboot remove
     update-rc.d nuxeo defaults
     invoke-rc.d nuxeo start
+    exit 0
     ;;
 
   *)
