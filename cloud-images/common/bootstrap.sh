@@ -6,7 +6,6 @@ echo '*       hard    nofile      8192' >> /etc/security/limits.conf
 
 # Add the nuxeo repository to the repository list
 echo "deb http://apt.nuxeo.org/ xenial releases" > /etc/apt/sources.list.d/nuxeo.list
-echo "deb http://apt.nuxeo.org/ xenial snapshots" > /etc/apt/sources.list.d/nuxeo.list
 # Register the nuxeo key
 wget -q -O- http://apt.nuxeo.org/nuxeo.key | apt-key add -
 
