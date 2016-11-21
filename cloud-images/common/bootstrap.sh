@@ -22,6 +22,7 @@ apt-get update
 apt-get -q -y upgrade
 apt-get -q -y install apache2
 apt-get -q -y install openssh-server openssh-client vim postfix pwgen curl sudo
+apt-get -q -y install ccextractor-nuxeo
 
 # Secure postfix
 perl -p -i -e "s/^inet_interfaces\s*=.*$/inet_interfaces=127.0.0.1/" /etc/postfix/main.cf
