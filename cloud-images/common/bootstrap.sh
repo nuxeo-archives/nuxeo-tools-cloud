@@ -99,6 +99,8 @@ case "\$1" in
         exit 0
     fi
     echo "DO NOT REMOVE THIS FILE" > /firstboot_done
+    # Wait for PostgreSQL to be up
+    until pg_lsclusters | grep nuxeodb | grep online; do sleep 1; done
     # Generate new DB password
     pgpass=\$(pwgen -c1)
     echo \$pgpass > /tmp/pgpass # DEBUG
