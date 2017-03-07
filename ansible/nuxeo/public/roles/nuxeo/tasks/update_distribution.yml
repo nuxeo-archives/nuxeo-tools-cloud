@@ -57,7 +57,7 @@
   sudo_user: "{{nuxeo_user}}"
 - name: Update nuxeo_conf variables
   lineinfile:  dest={{nuxeo_conf_dir}}/nuxeo.conf line="{{item.key}}={{item.value}}" regexp="#?{{item.key}}\s*=.*"
-  with_dict: nuxeo_conf
+  with_dict: "{{nuxeo_conf}}"
 - name: Update nuxeo.data.dir (default)
   lineinfile: dest={{nuxeo_conf_dir}}/nuxeo.conf line="nuxeo.data.dir={{nuxeo_base}}/data" regexp="#?nuxeo.data.dir\s*=.*"
   when: nuxeo_conf['nuxeo.data.dir'] is not defined
