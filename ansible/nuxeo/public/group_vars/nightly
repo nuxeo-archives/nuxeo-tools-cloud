@@ -16,5 +16,6 @@ nuxeo_packages:
 - nuxeo-dam
 - nuxeo-drive
 - nuxeo-csv
+- nuxeo-spreadsheet
 nuxeo_conf:
   nuxeo.bind.address: 127.0.0.1
