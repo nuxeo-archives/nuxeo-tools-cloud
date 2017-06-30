@@ -1,5 +1,5 @@
 ---
-nuxeo_version: 9.2-SNAPSHOT
+nuxeo_version: 9.3-SNAPSHOT
 nexus_url: "http://mavenin.nuxeo.com/nexus/service/local/artifact/maven/redirect?r=%s&g=org.nuxeo.ecm.distribution&a=nuxeo-server-tomcat&v=%s&e=zip"
 nexus_repository: daily-snapshots
 update_snapshots: true
