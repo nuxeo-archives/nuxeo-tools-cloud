@@ -1,8 +1,0 @@
----
-nuxeo_version: "6.0"
-update_snapshots: false
-reset_data: false
-dbname: nuxeo
-dbuser: nuxeo
-dbpass: supersecretpass
-
